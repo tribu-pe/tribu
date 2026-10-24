@@ -1,0 +1,235 @@
+import { describe, expect, test } from 'vitest';
+import { aCreditNote, anInvoice, aReceipt } from '../../test/support/documents';
+import { all, one, parseXml, text } from '../../test/support/xml';
+import { Reason } from '../catalogs/documents/credit-note';
+import { Affectation, Currency } from '../catalogs/index';
+import { build } from './build';
+
+const numbered = <T extends object>(document: T, number = 123) => ({ ...document, number });
+
+// Structure and values: sources/sunat/reglas-validacion-2026-08-26/factura-2.0.csv (ERR codes cited).
+// Byte-for-byte expected XML comes later as golden fixtures from documents accepted in beta.
+describe('build: invoice header', () => {
+  const root = parseXml(build(numbered(anInvoice({ issueDate: '2026-10-23' }))));
+
+  test('is an Invoice', () => {
+    expect(root.tagName).toBe('Invoice');
+    expect(root.namespaceURI).toBe('urn:oasis:names:specification:ubl:schema:xsd:Invoice-2');
+  });
+
+  test('UBL 2.1 (ERR 2074) and structure version 2.0 (ERR 2072)', () => {
+    expect(text(root, 'cbc:UBLVersionID')).toBe('2.1');
+    expect(text(root, 'cbc:CustomizationID')).toBe('2.0');
+  });
+
+  test('id, issue date, type and currency', () => {
+    expect(text(root, 'cbc:ID')).toBe('F001-123');
+    expect(text(root, 'cbc:IssueDate')).toBe('2026-10-23');
+    expect(text(root, 'cbc:InvoiceTypeCode')).toBe('01');
+    expect(text(root, 'cbc:DocumentCurrencyCode')).toBe('PEN');
+  });
+
+  test('operation type 0101, domestic sale (catalog 51, ERR 3205)', () => {
+    expect(one(root, 'cbc:InvoiceTypeCode').getAttribute('listID')).toBe('0101');
+  });
+
+  test('has an empty extension where the signature goes', () => {
+    expect(all(root, 'ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent')).toHaveLength(1);
+  });
+
+  test('declares the signature in cac:Signature with the issuer RUC (ERR 2078)', () => {
+    expect(text(root, 'cac:Signature/cac:SignatoryParty/cac:PartyIdentification/cbc:ID')).toBe(
+      '20000000001',
+    );
+  });
+
+  test('issuer and customer, with catalog 06 identity types', () => {
+    const supplier = 'cac:AccountingSupplierParty/cac:Party';
+    expect(text(root, `${supplier}/cac:PartyIdentification/cbc:ID`)).toBe('20000000001');
+    expect(one(root, `${supplier}/cac:PartyIdentification/cbc:ID`).getAttribute('schemeID')).toBe(
+      '6',
+    );
+    const customer = 'cac:AccountingCustomerParty/cac:Party';
+    expect(text(root, `${customer}/cac:PartyIdentification/cbc:ID`)).toBe('20123456786');
+    expect(text(root, `${customer}/cac:PartyLegalEntity/cbc:RegistrationName`)).toBe('CLIENTE SAC');
+  });
+
+  test('cash payment terms (ERR 3244, 3245)', () => {
+    const [terms] = all(root, 'cac:PaymentTerms');
+    expect(terms?.getElementsByTagName('cbc:ID')[0]?.textContent).toBe('FormaPago');
+    expect(terms?.getElementsByTagName('cbc:PaymentMeansID')[0]?.textContent).toBe('Contado');
+  });
+
+  test.todo('legend 1000 with the amount in words (exact wording to be confirmed in Milestone 0)');
+});
+
+describe('build: invoice line', () => {
+  const root = parseXml(
+    build(
+      numbered(anInvoice({ items: [{ description: 'Galletas', quantity: 3, price: '10.00' }] })),
+    ),
+  );
+  const line = 'cac:InvoiceLine';
+
+  test('Unit Value with up to 10 decimals (ERR 2369)', () => {
+    expect(text(root, `${line}/cac:Price/cbc:PriceAmount`)).toBe('8.4745762712');
+  });
+
+  test('Unit Price with tax, price type 01 (catalog 16)', () => {
+    const price = `${line}/cac:PricingReference/cac:AlternativeConditionPrice`;
+    expect(text(root, `${price}/cbc:PriceAmount`)).toBe('10.00');
+    expect(text(root, `${price}/cbc:PriceTypeCode`)).toBe('01');
+  });
+
+  test('Item Value and IGV with 2 decimals and the document currency (ERR 2071)', () => {
+    const value = one(root, `${line}/cbc:LineExtensionAmount`);
+    expect(value.textContent).toBe('25.42');
+    expect(value.getAttribute('currencyID')).toBe('PEN');
+    expect(text(root, `${line}/cac:TaxTotal/cbc:TaxAmount`)).toBe('4.58');
+  });
+
+  test('quantity with its unit code', () => {
+    const quantity = one(root, `${line}/cbc:InvoicedQuantity`);
+    expect(quantity.textContent).toBe('3');
+    expect(quantity.getAttribute('unitCode')).toBe('NIU');
+  });
+
+  test('taxed: affectation 10 and tax scheme 1000 IGV VAT (catalogs 07 and 05)', () => {
+    const category = `${line}/cac:TaxTotal/cac:TaxSubtotal/cac:TaxCategory`;
+    expect(text(root, `${category}/cbc:TaxExemptionReasonCode`)).toBe('10');
+    expect(Number(text(root, `${category}/cbc:Percent`))).toBe(18);
+    expect(text(root, `${category}/cac:TaxScheme/cbc:ID`)).toBe('1000');
+    expect(text(root, `${category}/cac:TaxScheme/cbc:Name`)).toBe('IGV');
+    expect(text(root, `${category}/cac:TaxScheme/cbc:TaxTypeCode`)).toBe('VAT');
+  });
+});
+
+describe('build: totals', () => {
+  const root = parseXml(
+    build(
+      numbered(
+        anInvoice({
+          items: [
+            { description: 'Teclado', quantity: 2, price: 118 },
+            { description: 'Libro', quantity: 1, price: 40, affectation: Affectation.Exempt },
+          ],
+        }),
+      ),
+    ),
+  );
+
+  test('the document tax total equals the sum of the items', () => {
+    expect(text(root, 'cac:TaxTotal/cbc:TaxAmount')).toBe('36.00');
+  });
+
+  test('one tax subtotal per tax scheme: 1000 IGV and 9997 EXO', () => {
+    const schemes = all(
+      root,
+      'cac:TaxTotal/cac:TaxSubtotal/cac:TaxCategory/cac:TaxScheme/cbc:ID',
+    ).map((element) => element.textContent);
+    expect(schemes).toEqual(['1000', '9997']);
+  });
+
+  test('payable amount', () => {
+    expect(text(root, 'cac:LegalMonetaryTotal/cbc:LineExtensionAmount')).toBe('240.00');
+    expect(text(root, 'cac:LegalMonetaryTotal/cbc:PayableAmount')).toBe('276.00');
+  });
+});
+
+describe('build: escaping by construction (ADR 0004)', () => {
+  test.each([
+    'A & B S.A.C.',
+    'MUEBLES <EL ROBLE> SAC',
+    'NOMBRE CON ]]> DENTRO',
+    'COMILLAS "DOBLES" Y \'SIMPLES\'',
+  ])('a customer named %j produces well-formed XML with the exact name', (name) => {
+    const root = parseXml(build(numbered(anInvoice({ customer: { ruc: '20123456786', name } }))));
+    expect(
+      text(root, 'cac:AccountingCustomerParty/cac:Party/cac:PartyLegalEntity/cbc:RegistrationName'),
+    ).toBe(name);
+  });
+
+  test('a description with & and < survives', () => {
+    const root = parseXml(
+      build(
+        numbered(
+          anInvoice({ items: [{ description: 'Cable <USB> & cargador', quantity: 1, price: 10 }] }),
+        ),
+      ),
+    );
+    expect(text(root, 'cac:InvoiceLine/cac:Item/cbc:Description')).toBe('Cable <USB> & cargador');
+  });
+});
+
+describe('build: credit payment terms', () => {
+  const root = parseXml(
+    build(
+      numbered(
+        anInvoice({
+          payment: {
+            installments: [
+              { amount: 118, due: '2026-11-30' },
+              { amount: 118, due: '2026-12-30' },
+            ],
+          },
+        }),
+      ),
+    ),
+  );
+
+  test('Credito with the pending amount, then Cuota001, Cuota002 (ERR 3245, 3246, 3251)', () => {
+    const terms = all(root, 'cac:PaymentTerms').map((element) => ({
+      means: element.getElementsByTagName('cbc:PaymentMeansID')[0]?.textContent,
+      amount: element.getElementsByTagName('cbc:Amount')[0]?.textContent,
+      due: element.getElementsByTagName('cbc:PaymentDueDate')[0]?.textContent,
+    }));
+    expect(terms).toEqual([
+      { means: 'Credito', amount: '236.00', due: undefined },
+      { means: 'Cuota001', amount: '118.00', due: '2026-11-30' },
+      { means: 'Cuota002', amount: '118.00', due: '2026-12-30' },
+    ]);
+  });
+});
+
+describe('build: receipt', () => {
+  test('is an Invoice with type 03 and a DNI customer', () => {
+    const root = parseXml(build(numbered(aReceipt(), 45)));
+    expect(root.tagName).toBe('Invoice');
+    expect(text(root, 'cbc:InvoiceTypeCode')).toBe('03');
+    expect(
+      one(
+        root,
+        'cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification/cbc:ID',
+      ).getAttribute('schemeID'),
+    ).toBe('1');
+  });
+
+  test.todo('an Anonymous Customer is coded schemeID "-" and ID "-" (Milestone 0, question 2)');
+});
+
+describe('build: credit note', () => {
+  const root = parseXml(
+    build(numbered(aCreditNote({ modifies: 'F001-123', reason: Reason.Item.Return }), 1)),
+  );
+
+  test('is a CreditNote with its own series', () => {
+    expect(root.tagName).toBe('CreditNote');
+    expect(text(root, 'cbc:ID')).toBe('FC01-1');
+  });
+
+  test('declares its Reason from catalog 09 (ERR 2128)', () => {
+    expect(text(root, 'cac:DiscrepancyResponse/cbc:ResponseCode')).toBe('07');
+    expect(text(root, 'cac:DiscrepancyResponse/cbc:Description').length).toBeGreaterThan(0);
+  });
+
+  test('references exactly one Affected Document (ERR 3261)', () => {
+    const reference = 'cac:BillingReference/cac:InvoiceDocumentReference';
+    expect(all(root, reference)).toHaveLength(1);
+    expect(text(root, `${reference}/cbc:ID`)).toBe('F001-123');
+    expect(text(root, `${reference}/cbc:DocumentTypeCode`)).toBe('01');
+  });
+
+  test('its currency is the document currency', () => {
+    expect(text(root, 'cbc:DocumentCurrencyCode')).toBe(Currency.Pen.code);
+  });
+});
