@@ -1,0 +1,3 @@
+# Tribu stores nothing; every operation returns a Record the caller keeps
+
+Several flows need earlier data: notes need the Affected Document, the Daily Summary needs the day's Receipts, retries need the prepared submission, and the Issuer is legally required to keep the XML and CDR. We considered storage adapters (database, file, memory) but rejected them: every integrator already has a database, and an adapter would put Tribu in charge of the most sensitive data. Instead each operation returns one plain, serializable `record` (data, signed XML, CDR, QR text, hash, Ticket, status). `modifies`, `dailySummary` and `retry` accept records back. The documented rule is "save the record before doing anything else".

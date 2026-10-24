@@ -1,0 +1,3 @@
+# Receipts are sent individually by default
+
+The first design reported Receipts only through the Daily Summary, so every beginner needed an end-of-day job before issuing their first Receipt. Since R.S. 114-2019, a Receipt can be sent on its own (sendBill) within 5 calendar days after its issue date. `receipt()` therefore sends at once and returns a CDR, like `invoice()`: issuing is sending. `{ send: false }` leaves the Receipt Issued for a Daily Summary, which stays the path for high volume, for Receipts older than 5 days, and for voiding Receipts. Tribu never switches between the two paths on its own. When the 5-day limit has passed, it throws an error that points to `dailySummary`.

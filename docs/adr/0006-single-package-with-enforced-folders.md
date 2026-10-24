@@ -1,0 +1,3 @@
+# One published package with lint-enforced folder boundaries
+
+An earlier design split Tribu into eight packages (catalogs, core, rules, ubl, signer, transports, sdk, testing). For a reader who wants to learn SUNAT from the code, that is too much to navigate, so Tribu ships as one package (`tribu`), like Axios, with folders that tell the story (`catalogs/`, `documents/`, `rules/`, `xml/`, `signing/`, `transport/`, `emit.ts`). Dependencies point one way only, and a lint rule enforces it, so a folder can be extracted into its own package later. Catalog updates cannot be published on their own; a patch release of `tribu` costs little.

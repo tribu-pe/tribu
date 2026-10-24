@@ -1,0 +1,3 @@
+# Rules and Catalogs are dated data with a mandatory reason and source
+
+SUNAT changes requirements with an Effective Date and sometimes postpones it (R.S. 000048-2026 moved from 2026-08-01 to 2027-01-01). Every Rule and Catalog entry therefore carries `why`, `source` and its Effective Dates, and is evaluated against the Document's issue date, not today's date. Catalogs live in data files that a script turns into types, constants and documentation, and CI fails if the generated code differs from the data. Most SUNAT changes become a one-file pull request that doesn't touch the core. Catalog constants are immutable objects (`{ catalog, code, name }`), not bare strings, because catalogs 09 and 10 reuse the same codes with different meanings.
