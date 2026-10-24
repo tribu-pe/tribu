@@ -1,0 +1,131 @@
+,N°, DATO,NIVEL,CONDICIÓN INFORMÁTICA DEL CONCEPTO,TIPO Y LONGITUD,FORMATO / VALOR,TAG UBL,USO DEL CAMPO,VALIDACIÓN / CONDICIÓN,TIPO DE RETORNO,"CODIGO
+ RETORNO",MENSAJE DE RETORNO,LISTADOS
+,Datos del Documento de Atribución Electrónico
+,1,Versión del UBL,Global,M,an3,"""2.1""",/Invoice/cbc:UBLVersionID,1,No existe el Tag UBL o es vacío,ERROR,2075,El XML no contiene el tag o no existe informacion de UBLVersionID,-
+,,,,,,,,,El valor del Tag UBL es diferente de '2.1',ERROR,2074,UBLVersionID - La versión del UBL no es correcta,-
+,2,Versión de la estructura del documento,Global,M,an3,"""2.0""",/Invoice/cbc:CustomizationID,1,No existe el Tag UBL o es vacío,ERROR,2073,El XML no existe informacion de CustomizationID,-
+,,,,,,,,,El valor del Tag UBL es diferente de '2.0',ERROR,2072,CustomizationID - La versión del documento no es la correcta,-
+,,,,C,,"""PE:SUNAT""",@schemeAgencyName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'PE:SUNAT'",OBSERV,4256,El dato ingresado como atributo @schemeAgencyName es incorrecto.,-
+,3,"Numeración, conformada por serie y número correlativo ",Global,M,an..13,<Serie>-<Número>,/Invoice/cbc:ID,1,El número de serie del Tag UBL es diferente al número de serie del archivo,ERROR,1035,Numero de Serie del nombre del archivo no coincide con el consignado en el contenido del archivo XML,-
+,,,,,,,,,El número de comprobante del Tag UBL es diferente al número de comprobante del archivo,ERROR,1036,Número de documento en el nombre del archivo no coincide con el consignado en el contenido del XML,-
+,,,,,,,,,"El formato del Tag UBL no tiene el formato:
+- [F][A-Z0-9]{3}-[0-9]{1,8}
+- [0-9]{4}-[0-9]{1,8}
+Nota: No se admite el valor cero como número correlativo.",ERROR,1001,ID - El dato SERIE-CORRELATIVO no cumple con el formato de acuerdo al tipo de comprobante,-
+,,,,,,,,,"Si la serie NO empieza con número, y el valor del Tag UBL se encuentra en el listado con indicador de estado igual a 1",ERROR,1033,El comprobante fue registrado previamente con otros datos,Otros documentos electrónicos
+,,,,,,,,,"Si la serie empieza con número, y el valor del Tag UBL se encuentra en el listado con indicador de estado igual a 2
+
+Si la serie NO empieza con número, y el valor del Tag UBL se encuentra en el listado con indicador de estado igual a 0 o 2 ",ERROR,1032,El comprobante ya esta informado y se encuentra con estado anulado o rechazado,Otros documentos electrónicos
+,,,,,,,,,"Si la serie empieza con número,  el Tag UBL no se encuentra en el listado",ERROR,3207,Comprobante físico no se encuentra autorizado,Autorizaciones de comprobantes físicos
+,4,Periodo Tributario de Atribución,Global,M,n6,"AAAAMM
+",/Invoice/cac:InvoicePeriod/cbc:DescriptionCode,,No existe el Tag UBL o es vacío,ERROR,3545,El XML no contiene el tag o no existe información del periodo tributario de atribución,-
+,,,,,,,,,El valor del Tag UBL no cumple con el formato AAAAMM,ERROR,3546,El periodo tributario de atribución no cumple con el formato establecido,-
+,,,,,,,,,El valor de MM (posiciones 5 y 6) del valor del Tag UBL no se encuentra en el rango 01<=MM<=12,ERROR,3547,El mes indicado en el periodo tributario de atribución no es válido,-
+,,,,,,,,,El valor de AAAA (posiciones 1 al 4) del valor del Tag UBL es mayor al año actual,ERROR,3548,El año indicado en el periodo tributario de atribución es mayor al año actual,-
+,,,,,,,,,El mes MM y año AAAA no corresponde al mes y año de la 'Fecha de emisión',OBSERV,4445,El periodo tributario de atribución no corresponde con el mes y año de la fecha de emisión,-
+,5,Fecha de emisión,Global,M,an10,YYYY-MM-DD,/Invoice/cbc:IssueDate,1,"Si serie del documento no inicia con número:
+La diferencia entre la fecha de recepción del XML y el valor del Tag UBL es mayor al plazo máximo vigente.",ERROR,2108,Presentacion fuera de fecha,-
+,,,,,,,,,El valor del Tag UBL es mayor a dos días de la fecha de envío del comprobante,ERROR,2329,La fecha de emision se encuentra fuera del limite permitido,-
+,6,Hora de emisión,Global,C,an8,hh:mm:ss,/Invoice/cbc:IssueTime,1,<<< SIN VALIDACIÓN >>>,-,-,-,-
+,7,Tipo de documento,Global,M,an2,"""25""",/Invoice/cbc:InvoiceTypeCode,1,No existe el Tag UBL o es vacío,ERROR,1004,El XML no contiene el tag o no existe informacion de InvoiceTypeCode,-
+,,,,,,,,,El valor del Tag UBL es diferente al tipo de documento del archivo,ERROR,1003,InvoiceTypeCode - El valor del tipo de documento es invalido o no coincide con el nombre del archivo,"Catálogo
+(001)"
+,,,,C,,"""PE:SUNAT""",@listAgencyName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'PE:SUNAT'",OBSERV,4251,El dato ingresado como atributo @listAgencyName es incorrecto.,-
+,,,,,,"""Tipo de Documento""",@listName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'Tipo de Documento'",OBSERV,4252,El dato ingresado como atributo @listName es incorrecto.,-
+,,,,,,"""urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01""",@listURI,0..1,"Si existe el atributo, el valor ingresado es diferente a 'urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01'",OBSERV,4253,El dato ingresado como atributo @listURI es incorrecto.,-
+,8,Tipo de moneda en la cual se emite el documento de atribución,Global,M,an3,(Catálogo N.° 02),/Invoice/cbc:DocumentCurrencyCode,1,No existe el Tag UBL o es vacío,ERROR,2070,El XML no contiene el tag o no existe informacion de DocumentCurrencyCode,-
+,,,,,,,,,El valor del Tag UBL es diferente al listado.,ERROR,3088,El valor ingresado como moneda del comprobante no es valido (catalogo nro 02).,"Catálogo
+(002)"
+,,,,,,,,,La moneda de los montos atribuidos y totales de comprobantes es diferente al valor del Tag UBL,ERROR,2337,La moneda debe ser la misma en todo el documento,-
+,,,,C,,"""ISO 4217 Alpha""",@listID,0..1,"Si existe el atributo, el valor ingresado es diferente a 'ISO 4217 Alpha'",OBSERV,4254,El dato ingresado como atributo @listID es incorrecto.,-
+,,,,,,"""Currency""",@listName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'Currency'",OBSERV,4252,El dato ingresado como atributo @listName es incorrecto.,-
+,,,,,,"""United Nations Economic Commission for Europe""",@listAgencyName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'United Nations Economic Commission for Europe'",OBSERV,4251,El dato ingresado como atributo @listAgencyName es incorrecto.,-
+,Datos de la Firma electrónica
+,9,Firma digital,Global,M,an..3000,-,-,1,<<< REVISAR HOJA FIRMA >>>,-,-,-,-
+,Datos del Emisor
+,10,Número de RUC,Global,M,an11,n11,/Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID (Número de RUC),1,Existe más de un Tag UBL cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification,ERROR,3089,El XML contiene mas de un tag como elemento de numero de documento del emisor,-
+,,,,,,,,,El valor del Tag UBL es diferente al RUC del nombre del XML,ERROR,1034,Número de RUC del nombre del archivo no coincide con el consignado en el contenido del archivo XML,-
+,,,,,,,,,El valor del Tag UBL tiene un ind_estado diferente '00' en el listado,ERROR,2010,El contribuyente no esta activo,Contribuyentes
+,,,,,,,,,El valor del Tag UBL tiene un ind_condicion igual a '12' en el listado,ERROR,2011,El contribuyente no esta habido,Contribuyentes
+,,,,,n1 ,"""6""",/Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID@schemeID (Tipo de documento de identidad),1,No existe el atributo o es vacío,ERROR,1008,El XML no contiene el tag o no existe informacion en tipo de documento del emisor.,-
+,,,,,,,,,El valor del Tag UBL es diferente a '6',ERROR,1007,El dato ingresado no cumple con el estandar,-
+,,,,C,,"""Documento de Identidad""",@schemeName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'Documento de Identidad'",OBSERV,4255,El dato ingresado como atributo @schemeName es incorrecto.,-
+,,,,,,"""PE:SUNAT""",@schemeAgencyName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'PE:SUNAT'",OBSERV,4256,El dato ingresado como atributo @schemeAgencyName es incorrecto.,-
+,,,,,,"""urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06""",@schemeURI,0..1,"Si existe el atributo, el valor ingresado es diferente a 'urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06'",OBSERV,4257,El dato ingresado como atributo @schemeURI es incorrecto.,-
+,11,Nombre comercial,Global,C,an..250,,/Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyName/cbc:Name,1,"Si existe el tag, el formato del Tag UBL es diferente a alfanumérico de  3 hasta 250 caracteres  (se considera cualquier carácter incluido espacio, no se permite ningún otro 'whitespace character': salto de línea, tab, fin de línea, etc. No se permiten espacios al inicio y al final del contenido)",OBSERV,4092,El nombre comercial del emisor no cumple con el formato establecido,-
+,12,"Apellidos y nombres, denominación o razón social",Global,M,an..250,,/Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cbc:RegistrationName,1,No existe el Tag UBL o es vacío,ERROR,1037,El XML no contiene el tag o no existe informacion de RegistrationName del emisor del documento,-
+,,,,,,,,,"El formato del Tag UBL es diferente a alfanumérico de hasta 250 caracteres (se considera cualquier carácter incluido espacio, no se permite ningún otro 'whitespace character': salto de línea, tab, fin de línea, etc. No se permiten espacios al inicio y al final del contenido)",OBSERV,4338,RegistrationName - El nombre o razon social del emisor no cumple con el estandar,-
+,13,Domicilio fiscal,Global,C,an..200,,"/Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cac:RegistrationAddress/cac:AddressLine/cbc:Line
+(Dirección completa y detallada)",1,"Si existe el tag, El formato del Tag UBL es diferente a alfanumérico de 3 a 200 caracteres (se considera cualquier carácter incluido espacio, no se permite ningún otro 'whitespace character': salto de línea, tab, fin de línea, etc. No se permiten espacios al inicio y al final del contenido)",OBSERV,4094,La dirección completa y detallada del domicilio fiscal del emisor no cumple con el formato establecido,-
+,,,,,an..25,,/Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cac:RegistrationAddress/cbc:CitySubdivisionName (Urbanización),0..1,"Si existe el tag, el formato del Tag UBL es diferente a alfanumérico de 1 a 25 caracteres (se considera cualquier carácter incluido espacio, no se permite ningún otro 'whitespace character': salto de línea, tab, fin de línea, etc. No se permiten espacios al inicio y al final del contenido)",OBSERV,4095,La urbanización del domicilio fiscal del emisor no cumple con el formato establecido,-
+,,,,,an..30,,/Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cac:RegistrationAddress/cbc:CityName (Provincia),0..1,"Si existe el tag, el formato del Tag UBL es diferente a alfanumérico de 1 a 30 caracteres (se considera cualquier carácter incluido espacio, no se permite ningún otro 'whitespace character': salto de línea, tab, fin de línea, etc. No se permiten espacios al inicio y al final del contenido)",OBSERV,4096,La provincia del domicilio fiscal del emisor no cumple con el formato establecido,-
+,,,,,an6,(Catálogo N.° 13),/Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cac:RegistrationAddress/cbc:ID (Código de ubigeo),1,"Si el Tag UBL existe, el valor del Tag UBL no está en el listado",OBSERV,4093,El codigo de ubigeo del domicilio fiscal del emisor no es válido,"Catálogo
+(013)"
+,,,,,,"""PE:INEI""",@schemeAgencyName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'PE:INEI'",OBSERV,4256,El dato ingresado como atributo @schemeAgencyName es incorrecto.,-
+,,,,,,"""Ubigeos""",@schemeName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'Ubigeos'",OBSERV,4255,El dato ingresado como atributo @schemeName es incorrecto.,-
+,,,,,an..30,,/Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cac:RegistrationAddress/cbc:CountrySubentity (Departamento),0..1,"Si existe el Tag UBL, el formato del Tag UBL es diferente a alfanumérico de 1 a 30 caracteres (se considera cualquier carácter incluido espacio, no se permite ningún otro 'whitespace character': salto de línea, tab, fin de línea, etc. No se permiten espacios al inicio y al final del contenido)",OBSERV,4097,El departamento del domicilio fiscal del emisor no cumple con el formato establecido,-
+,,,,,an..30,,/Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cac:RegistrationAddress/cbc:District (Distrito),0..1,"Si existe el Tag UBL, el formato del Tag UBL es diferente a alfanumérico de 1 a 30 caracteres (se considera cualquier carácter incluido espacio, no se permite ningún otro 'whitespace character': salto de línea, tab, fin de línea, etc. No se permiten espacios al inicio y al final del contenido)",OBSERV,4098,El distrito del domicilio fiscal del emisor no cumple con el formato establecido,-
+,,,,,an2,(Catálogo N.° 04),/Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cac:RegistrationAddress/cac:Country/cbc:IdentificationCode (Código de país),1,"Si el Tag UBL existe, el valor del Tag UBL es diferente a PE",OBSERV,4041,El codigo de pais debe ser PE,"Catálogo
+(004)"
+,,,,,,"""ISO 3166-1""",@listID,0..1,"Si existe el atributo, el valor ingresado es diferente a 'ISO 3166-1'",OBSERV,4254,El dato ingresado como atributo @listID es incorrecto.,-
+,,,,,,"'""United Nations Economic Commission for Europe""",@listAgencyName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'United Nations Economic Commission for Europe'",OBSERV,4251,El dato ingresado como atributo @listAgencyName es incorrecto.,-
+,,,,,,"""Country""",@listName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'Country'",OBSERV,4252,El dato ingresado como atributo @listName es incorrecto.,-
+,Datos del Partícipe
+,14,Tipo y número de documento del partícpe,Global,M,n11,,/Invoice/cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification/cbc:ID (Número de documento),1,Existe más de un Tag UBL en el XML cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification,ERROR,3090,El XML contiene mas de un tag como elemento de numero de documento del receptor.,-
+,,,,,,,,,No existe el Tag UBL o es vacío,ERROR,2014,El XML no contiene el tag o no existe informacion del número de documento de identidad del receptor del documento,-
+,,,,,,,,,"Si 'Tipo de documento del adquiriente o usuario' es '6', el formato del Tag UBL es diferente a numérico de 11 dígitos",ERROR,2017,El numero de documento de identidad del receptor debe ser  RUC,-
+,,,,,,,,,"Si 'Tipo de documento del adquiriente o usuario' es '6', el valor del Tag UBL no está en el listado",ERROR,1083,El numero de RUC del receptor no existe,Contribuyentes
+,,,,,,,,,"Si 'Tipo de documento del adquiriente o usuario' es '6', el valor del Tag UBL tiene un ind_estado diferente a 00 en el listado",OBSERV,4013,El RUC  del receptor no esta activo,Contribuyentes
+,,,,,,,,,"Si 'Tipo de documento del adquiriente o usuario' es '6', el valor del Tag UBL tiene un ind_condicion igual a '12' en el listado",OBSERV,4014,El RUC del receptor no esta habido,Contribuyentes
+,,,,,an1,(Catálogo N.° 06),/Invoice/cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification/cbc:ID@schemeID (Tipo de documento de identidad),1,No existe el atributo o es vacío,ERROR,2015,El XML no contiene el tag o no existe informacion del tipo de documento de identidad del receptor del documento,-
+,,,,,,,,,El valor del Tag UBL es diferente a '6',ERROR,2800,El dato ingresado en el tipo de documento de identidad del receptor no esta permitido.,"Catálogo
+(006)"
+,,,,C,,"""Documento de Identidad""",@schemeName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'Documento de Identidad'",OBSERV,4255,El dato ingresado como atributo @schemeName es incorrecto.,-
+,,,,,,"""PE:SUNAT""",@schemeAgencyName,0..1,"Si existe el atributo, el valor ingresado es diferente a 'PE:SUNAT'",OBSERV,4256,El dato ingresado como atributo @schemeAgencyName es incorrecto.,-
+,,,,,,"""urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06""",@schemeURI,0..1,"Si existe el atributo, el valor ingresado es diferente a 'urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06'",OBSERV,4257,El dato ingresado como atributo @schemeURI es incorrecto.,-
+,15,"Apellidos y nombres, denominación o razón social del partícipe",Global,M,an..250,,/Invoice/cac:AccountingCustomerParty/cac:Party/cac:PartyLegalEntity/cbc:RegistrationName,1,No existe el Tag UBL o es vacío,ERROR,2021,El XML no contiene el tag o no existe informacion de RegistrationName del receptor del documento,-
+,,,,,,,,,"El formato del Tag UBL es diferente a alfanumérico de 3 hasta 250 caracteres (se considera cualquier carácter incluido espacio, no se permite ningún otro 'whitespace character': salto de línea, tab, fin de línea, etc. No se permiten espacios al inicio y al final del contenido)",ERROR,2022,RegistrationName -  El dato ingresado no cumple con el estandar,-
+,Datos del Contrato de Colaboración Empresarial
+,16,N.° de Resolución,Global,M,an..21,NNN-NNN-NNNNNNN/SUNAT,/Invoice/cac:ContractDocumentReference/cbc:DocumentStatusCode,,No existe el Tag UBL o es vacío,ERROR,3550,Debe consignar el Número de resolución,-
+,,,,,,,,,"El formato del Tag UBL es diferente a alfanumérico hasta 21 caracteres (solo se permite letras mayúsculas, números, '-' y '/', no se permite ningún otro 'whitespace character': espacio, salto de línea, tab, fin de línea, etc. Tampoco se permite solo espacios en blanco o solamente ceros)",OBSERV,4446,El dato ingresado en el campo Número de Resolución  no cumple con el formato establecido.,-
+,17,N.° de Contrato ,Global, M,an..30,,/Invoice/cac:ContractDocumentReference/cbc:ID,,No existe el Tag UBL o es vacío,ERROR,3551,Debe consignar el Numero de contrato,-
+,,,,,,,,,"Si el formato del Tag UBL es diferente a alfanumérico de 1 a 30 caractéres (se considera cualquier carácter incluido espacio, no se permite ningún otro 'whitespace character': salto de línea, tab, fin de línea, etc. No se permiten espacios al inicio y al final del contenido)",OBSERV,4447,El dato ingresado en el campo Número de Contrato no cumple con el formato establecido.,-
+,18,Porcentaje de Atribución,Global,M,an..5,"n(2,2)",/Invoice/cac:ContractDocumentReference/cac:IssuerParty/cac:PartyLegalEntity/cac:ShareholderParty/cbc:PartecipationPercent,,No existe el Tag UBL,ERROR,3552,Debe consigar el porcentaje de participacion,-
+,,,,,,,,,El formato del Tag UBL es diferente de decimal positivo de hasta 2 enteros y hasta 2 decimales,ERROR,3553,El dato ingresado en el campo Porcentaje de Atribución no cumple con el formato establecido.,-
+,"Detalle de montos de Crédito Fiscal, Costos y Gastos por atribuir y atribuidos"
+,19,Número de orden del Item,Item,M,an1,n1,/Invoice/cac:InvoiceLine/cbc:ID,,"El formato del Tag UBL es diferente de numérico de 1 dígito; o, es igual cero.",ERROR,2023,El Numero de orden del item no cumple con el formato establecido,-
+,,,,,,,,,El valor del Tag UBL no debe repetirse en el /Invoice,ERROR,2752,El número de ítem no puede estar duplicado.,-
+,20,Indicador de tipo de monto,Item,M,an1,"""1"" Valor de operaciones afectas IGV
+""2"" Valor de operaciones no afectas IGV 
+""3"" IGV de operaciones afectas 
+""4"" Costos y Gastos no afectos IGV","/Invoice/cac:InvoiceLine/cac:Item/cac:SellersItemIdentification/cbc:ID
+ ",,No existe el Tag UBL o es vacío,ERROR,3554,El indicador de tipo de monto no cumple con el formato establecido,-
+,,,,,,,,,"El valor del Tag UBL es diferente de '1', '2', '3' y '4' ",ERROR,3555,"El indicador de tipo de monto es diferente de '1', '2', '3' y '4' ",-
+,,,,,,,,,Si existe otra línea con el mismo valor del Tag UBL (existe otro cac:SellersItemIdentification/cbc.id con el mismo valor),ERROR,3556,Solo debe consignar un indicador de tipo de monto a atribuir en el documento,-
+,21,Descripción del monto,Item,C,an..200,,/Invoice/cac:InvoiceLine/cac:Item/cbc:Description,,"Si el formato del Tag UBL es diferente a alfanumérico de 1 a 200 caractéres (se considera cualquier carácter incluido espacio, no se permite ningún otro 'whitespace character': salto de línea, tab, fin de línea, etc. No se permiten espacios al inicio y al final del contenido)",OBSERV,4448,La descripción del monto no cumple con el formato establecido,-
+,22,Monto por atribuir,Item,M,an..15,"n(12,2)",/Invoice/cac:InvoiceLine/cac:Price/cbc:PriceAmount,,No existe el Tag UBL,ERROR,3557,Debe consignar el monto atribuido,-
+,,,,,,,,,El formato del Tag UBL es diferente de decimal positivo de 12 enteros y hasta 2 decimales y diferente de cero ,ERROR,2067,cac:Price/cbc:PriceAmount - El dato ingresado no cumple con el estandar,-
+,,,,,,,,,"Si 'Indicador de tipo de monto' es '1' (Valor de Operaciones afectas IGV) , y campo 'IGV de operaciones afectas' no existe o es cero, el valor del Tag UBL es diferente de cero",ERROR,3558,"El dato ingresado en el campo Valor de Operaciones afectas IGV debe ser ""cero"".",-
+,,,,,,,,,"Si 'Indicador de tipo de monto' es '3' (IGV de operaciones afectas), y campo 'Valor de operaciones afectas - IGV' no existe o es cero, el valor del Tag UBL es diferente de cero",ERROR,3559,"El dato ingresado en el campo IGV de operaciones afectas debe ser ""cero""",-
+,,,,,,,,,"Si 'Indicador de tipo de monto' es '3' (IGV de operaciones afectas), el valor del Tag UBL es diferente de cero y mayor que el campo 'Valor de operaciones afectas IGV' por 0.18, con una tolerancia de +1  (se permite que pueda ser mayor hasta por 1)",OBSERV,4449,El dato ingresado en el campo IGV de operaciones afectas es mayor al 18% de las adquisiciones gravadas. ,-
+,,,,,an3,(Catálogo N.° 02),@currencyID,,"Si existe el atributo, el valor es diferente al ingresado en 'Tipo de moneda'",ERROR,2337,La moneda debe ser la misma en todo el documento,"Catálogo
+(002)"
+,23,Monto atribuido,Item,M,an..15,"n(12,2)",/Invoice/cac:InvoiceLine/cbc:LineExtensionAmount,,El formato del Tag UBL es diferente de decimal positivo de 12 enteros y hasta 2 decimales y diferente de cero ,ERROR,2370,El dato ingresado en LineExtensionAmount del item no cumple con el formato establecido,-
+,,,,,,,,,"Si el campo 'Monto a atribuir' es igual a cero, el valor del Tag UBL es diferente de cero ",ERROR,3560,"El dato ingresado en el campo Monto atribuido debe ser ""cero"". ",-
+,,,,,,,,,"Si el campo 'Monto por atribuir' es mayor a cero, el valor del Tag UBL es diferente de 'Monto a atribuir' por 'Porcentaje de atribución' dividido entre 100, con una tolerancia de + - 1",ERROR,3561,El dato ingresado en el campo Monto atribuido es diferente al % de atribución.,-
+,,,,,an3,(Catálogo N.° 02),@currencyID,,"Si existe el atributo, el valor es diferente al ingresado en 'Tipo de moneda'",ERROR,2337,La moneda debe ser la misma en todo el documento,"Catálogo
+(002)"
+,Resumen Importes Totales 
+,24,Total montos atribuidos,Global,M,an..15,"n(12,2)",/Invoice/cac:LegalMonetaryTotal/cbc:PayableAmount,,El formato del Tag UBL es diferente de decimal positivo de 12 enteros y hasta 2 decimales y diferente de cero ,ERROR,2043,El dato ingresado en PayableAmount no cumple con el formato establecido,-
+,,,,,,,,,"El valor del Tag UBL es diferente a la sumatoria de los 'Monto atribuidos' (cac:InvoiceLine/cbc:LineExtensionAmount) de los ítems, con una tolerancia + - 1",ERROR,3562,La sumatoria de los montos atribuidos no es correcta.,-
+,,,,,an3,(Catálogo N.° 02),@currencyID,,"Si existe el atributo, el valor es diferente al ingresado en 'Tipo de moneda'",ERROR,2337,La moneda debe ser la misma en todo el documento,"Catálogo
+(002)"
+,Datos adicionales de IGV sujeto a régimen de  Recuperación Anticipada
+,25,IGV- Régimen de recuperación anticipada,Global,C,an..15,"n(12,2)",/Invoice/cac:TaxTotal/cbc:TaxAmount,,El formato del Tag UBL es diferente de decimal positivo de 12 enteros y hasta 2 decimales y diferente de cero ,ERROR,3563,El dato ingresado en el campo Régimen de recuperación anticipada no cumple con el formato establecido.,-
+,,,,,an3,(Catálogo N.° 02),@currencyID,,"Si existe el atributo, el valor es diferente al ingresado en 'Tipo de moneda'",ERROR,2337,La moneda debe ser la misma en todo el documento,"Catálogo
+(002)"
+,26,Norma del Régimen de recuperación anticipada,Global,C,an..50,,"/Invoice/cac:AdditionalDocumentReference/cbc:ID (Número de documento)
+
+",,"Si no existe el Tag UBL o es vacío, y existe 'IGV- Régimen de recuperación anticipada' con monto mayor a cero",ERROR,3564,"Si consigna monto de IGV-Recuperacion anticipada, debe informar la norma de sustento",-
+,,,,,,,,,"Si el formato del Tag UBL es diferente a alfanumérico de hasta 50 caracteres (se considera cualquier carácter incluido espacio, no se permite ningún otro 'whitespace character': salto de línea, tab, fin de línea, etc. No se permiten espacios al inicio y al final del contenido)",OBSERV,4450,El dato ingresado en el campo Norma del Régimen de recuperación anticipada  no cumple con el formato establecido.,-
+,,,,,an2,"""99"" Otros",/Invoice/cac:AdditionalDocumentReference/cbc:DocumentTypeCode (Tipo de documento relacionado),,"Si existe el ""Número de documento"", el valor del Tag UBL es diferente de '99'",OBSERV,4451,El dato ingresado en el campo Tipo de documento relacionado no cumple con el formato establecido.,-
