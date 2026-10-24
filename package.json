@@ -1,0 +1,69 @@
+{
+  "name": "tribu",
+  "version": "0.0.0",
+  "private": true,
+  "description": "SUNAT electronic invoicing for TypeScript: issue invoices, receipts and notes to Peru's tax authority.",
+  "keywords": [
+    "sunat",
+    "peru",
+    "ubl",
+    "facturacion-electronica",
+    "cpe",
+    "invoice",
+    "e-invoicing"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tribu-pe/tribu.git"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@12.10.1",
+  "exports": {
+    ".": "./dist/index.js",
+    "./values": "./dist/values.js",
+    "./results": "./dist/results.js",
+    "./catalogs": "./dist/catalogs.js",
+    "./catalogs/*": "./dist/catalogs/*.js",
+    "./testing": "./dist/testing.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "deps": "depcruise src",
+    "test": "vitest run --project unit",
+    "test:watch": "vitest",
+    "test:beta": "vitest run --project beta",
+    "check": "pnpm typecheck && pnpm lint && pnpm deps && pnpm test",
+    "changeset": "changeset"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.9.12",
+    "big.js": "^7.0.1",
+    "fflate": "^0.8.3",
+    "node-forge": "^1.4.0",
+    "xml-crypto": "^6.4.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@changesets/cli": "^3.0.3",
+    "@types/big.js": "^7.0.0",
+    "@types/node": "^22.20.5",
+    "@types/node-forge": "^1.3.14",
+    "dependency-cruiser": "^18.6.0",
+    "tsdown": "^0.23.1",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.5",
+    "yaml": "^2.9.1"
+  }
+}
