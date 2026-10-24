@@ -40,8 +40,8 @@ Never use `emit`, `submit`, `generate`, `parse` (except `DocumentId.parse`), `co
 
 ```ts
 // ✅
-import { Affectation, Document } from '../catalogs';
-appliesTo: [Document.Invoice]
+import { Affectation, DocumentType } from '../catalogs';
+appliesTo: [DocumentType.Invoice]
 affectation: Affectation.Exempt
 const reason = Reason.from(row.reasonCode);   // external value: validated or throws
 
@@ -71,13 +71,13 @@ Write one Rule per file, with its test beside it:
 ```ts
 // src/rules/invoice/customer-has-ruc.ts
 import { Rule } from '../rule';
-import { Document } from '../../catalogs';
+import { DocumentType } from '../../catalogs';
 import { hasRuc } from '../../documents/predicates';
 
 /** Invoices require a RUC customer. ERR 2800 */
 export const customerHasRuc = Rule.define({
   id: 'invoice/customer-has-ruc',          // = folder/file name, phrased as what must hold
-  appliesTo: [Document.Invoice],
+  appliesTo: [DocumentType.Invoice],
   sunatCode: '2800',                       // severity derives from it (ADR 0011); no `severity` field
   effectiveFrom: '2018-01-01',
   why: 'Only invoices give IGV tax credit, so the buyer must have a RUC.',

@@ -6,7 +6,32 @@ Tribu is an open-source TypeScript SDK for issuing Peruvian electronic payment d
 
 **Design complete; no code yet.** The next step is Milestone 0 ([docs/plan/milestone-0.md](docs/plan/milestone-0.md)): a throwaway experiment in `poc/` that signs and sends documents to SUNAT beta. Then comes v0.1 ([docs/plan/v0.1-scope.md](docs/plan/v0.1-scope.md)).
 
-No `package.json`, build, test or lint commands exist yet. **Never invent commands.** The stack is agreed (pnpm, tsdown, Vitest, Biome, dependency-cruiser, changesets, TypeScript strict, Node ≥ 22, ESM only). When you add the tooling, record the real commands here.
+Tooling is configured; `src/` does not exist yet. **Never invent commands:** these are the only ones.
+
+| Command | What it does |
+|---|---|
+| `pnpm install` | Install dependencies. Versions younger than 7 days are refused (`minimumReleaseAge` in `pnpm-workspace.yaml`) |
+| `pnpm typecheck` | `tsc --noEmit` (strict, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`) |
+| `pnpm lint` / `pnpm format` | Biome check / check and fix |
+| `pnpm deps` | dependency-cruiser layer rules (`.dependency-cruiser.cjs`). Fails until `src/` exists |
+| `pnpm test` | Vitest, `unit` project: `src/**/*.test.ts` and `test/golden/` |
+| `pnpm test:beta` | Vitest, `beta` project: `test/beta/`, against SUNAT beta. Manual only |
+| `pnpm check` | typecheck + lint + deps + test |
+| `pnpm build` | tsdown, one entry per public entry point (`tsdown.config.ts`). Fails until those files exist |
+| `pnpm changeset` | Record a user-facing change |
+
+Toolchain: Node ≥ 22.12 (`.node-version`: 24), pnpm 12, TypeScript 6.0 (not 7: dependency-cruiser supports TypeScript < 7), ESM only, `moduleResolution: Bundler` (relative imports without extensions).
+
+Runtime dependencies:
+
+| Package | Use |
+|---|---|
+| `big.js` | `Decimal`, only in `src/documents/decimal.ts` |
+| `xml-crypto` + `node-forge` | Signing, only in `src/signing/` |
+| `@xmldom/xmldom` | Reading signed XML and SUNAT answers, only in `src/signing/` and `src/transport/` |
+| `fflate` | ZIP, only in `src/transport/` |
+
+The rules in `.dependency-cruiser.cjs` and `biome.json` enforce where each package may be imported.
 
 ## Read before working
 
@@ -18,6 +43,7 @@ No `package.json`, build, test or lint commands exist yet. **Never invent comman
 | [docs/conventions.md](docs/conventions.md) | The full conventions; they win if anything else disagrees |
 | [docs/adr/](docs/adr) | Why things are the way they are (0001–0018). Read the relevant ADR before changing a design |
 | [docs/research/sunat-facts-2026-10.md](docs/research/sunat-facts-2026-10.md) | Verified SUNAT facts, with sources |
+| [sources/sunat/](sources/sunat) | SUNAT's validation workbook as CSV (rules, return codes, catalogs). Search here before anything else; cite it as `sources/sunat/reglas-validacion-2026-08-26/<file>.csv` |
 
 ## Rules for agents
 
