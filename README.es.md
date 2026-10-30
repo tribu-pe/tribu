@@ -14,7 +14,7 @@ Tribu calcula los montos, valida el comprobante contra las reglas de SUNAT antes
 [Read in English](README.md)
 
 > [!WARNING]
-> **Todavía no está publicado.** La v0.1 está implementada, pero aún no se ha enviado al entorno beta de SUNAT (Milestone 0). No la uses para comprobantes reales hasta que haya una versión publicada.
+> **Todavía no está publicado.** La v0.1 está implementada y el entorno beta de SUNAT acepta todos los tipos de comprobante que emite ([resultados del Milestone 0](docs/research/milestone-0-results.md), en inglés), pero no se ha usado en producción. No la uses para comprobantes reales hasta que haya una versión publicada.
 
 > [!IMPORTANT]
 > **La v0.1 no soporta detracciones.** Si tus facturas están sujetas a detracción, todavía no uses la v0.1 para esas facturas. Tampoco cubre percepciones, retenciones, anticipos, exportaciones, operaciones gratuitas, ISC ni ICBPER (ver [Qué cubre la v0.1](#qué-cubre-la-v01)).
@@ -247,7 +247,7 @@ fake.submissions; // lo que se envió
 | `nextNumber` | ninguno | `(series) => Promise<number>`; si no, pasa `number` en cada llamada |
 | `series` | `F001`, `B001`, notas `FC01`/`BC01`, `FD01`/`BD01` | La serie de una nota empieza con la letra del comprobante que modifica |
 | `rounding` | `Rounding.HalfUp` | O `Rounding.HalfEven` |
-| `signature` | `Signature.RsaSha256` | O `Signature.RsaSha1`. Cuáles acepta SUNAT se confirma en el Milestone 0 |
+| `signature` | `Signature.RsaSha256` | O `Signature.RsaSha1`. SUNAT beta acepta ambos |
 | `recovery` | `Recovery.Confirm` | Un valor, o uno por tipo de comprobante |
 | `timeout` | `30000` ms | |
 | `retry` | `{ attempts: 3, delay: 1000 }` | Solo para fallos antes del envío |
