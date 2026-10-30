@@ -1,0 +1,175 @@
+#!/usr/bin/env node
+// Generates src/catalogs/data/return-codes.ts from SUNAT's validation workbook CSVs (ADR 0005).
+// Run: pnpm catalogs. With --check (pnpm catalogs:check, part of pnpm check) it writes nothing
+// and fails if the committed file differs from what the CSVs produce.
+import { execFileSync } from 'node:child_process';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const directory = 'sources/sunat/reglas-validacion-2026-08-26';
+const output = 'src/catalogs/data/return-codes.ts';
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let field = '';
+  let quoted = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+    if (quoted) {
+      if (character === '"' && text[index + 1] === '"') {
+        field += '"';
+        index += 1;
+      } else if (character === '"') {
+        quoted = false;
+      } else {
+        field += character;
+      }
+    } else if (character === '"' && field === '') {
+      quoted = true;
+    } else if (character === ',') {
+      row.push(field);
+      field = '';
+    } else if (character === '\n') {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = '';
+    } else if (character !== '\r') {
+      field += character;
+    }
+  }
+  if (field !== '' || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
+
+const clean = (value) => value.replace(/"/g, '').replace(/\s+/g, ' ').trim();
+
+// Official messages, verbatim (codigos-retorno.csv).
+const messages = new Map();
+for (const row of parseCsv(readFileSync(join(directory, 'codigos-retorno.csv'), 'utf8'))) {
+  const code = clean(row[0] ?? '');
+  const name = clean(row[1] ?? '');
+  if (/^\d{4}$/.test(code) && name !== '') messages.set(code, name);
+}
+
+// Base severity: every validation row carries ERROR or OBSERV next to its return code.
+const severity = new Map();
+const reference = new Set([
+  'codigos-retorno.csv',
+  'control-de-cambios.csv',
+  'catalogos.csv',
+  'general.csv',
+  'listados.csv',
+  'parametros.csv',
+  'firma.csv',
+]);
+for (const file of readdirSync(directory)) {
+  if (!file.endsWith('.csv') || reference.has(file)) continue;
+  for (const row of parseCsv(readFileSync(join(directory, file), 'utf8'))) {
+    for (let index = 0; index < row.length; index += 1) {
+      const kind = clean(row[index] ?? '').toUpperCase();
+      if (kind !== 'ERROR' && kind !== 'OBSERV' && kind !== 'OBSERVACION') continue;
+      const code = clean(row[index + 1] ?? '');
+      if (!/^\d{4}$/.test(code)) continue;
+      if (kind === 'ERROR' || !severity.has(code))
+        severity.set(code, kind === 'ERROR' ? 'error' : 'observation');
+      if (kind === 'ERROR') severity.set(code, 'error');
+    }
+  }
+}
+
+// Dated severity changes (control-de-cambios.csv): ERR-xxxx / OBS-xxxx with a validity date.
+const changes = new Map();
+for (const row of parseCsv(readFileSync(join(directory, 'control-de-cambios.csv'), 'utf8'))) {
+  const dates = [];
+  const tokens = [];
+  for (const cell of row) {
+    for (const match of cell.matchAll(/(\d{2})\/(\d{2})\/(\d{4})/g)) {
+      dates.push(`${match[3]}-${match[2]}-${match[1]}`);
+    }
+    for (const match of cell.matchAll(/(\d{4})-(\d{2})-(\d{2})/g)) {
+      dates.push(`${match[1]}-${match[2]}-${match[3]}`);
+    }
+    for (const match of cell.matchAll(/(ERR|OBS)-(\d{4})/g)) {
+      tokens.push([match[2], match[1] === 'ERR' ? 'error' : 'observation']);
+    }
+  }
+  if (dates.length === 0) continue;
+  const from = dates.sort().at(-1);
+  for (const [code, value] of tokens) {
+    if (!messages.has(code)) continue;
+    const timeline = changes.get(code) ?? new Map();
+    // A later row for the same date wins; rows are read in file order.
+    timeline.set(from, value);
+    changes.set(code, timeline);
+  }
+}
+
+const codes = [...messages.keys()].sort();
+const codeSeverity = (code) => {
+  if (severity.has(code)) return severity.get(code);
+  return Number(code) >= 4000 ? 'observation' : 'error';
+};
+
+const lines = [];
+for (const code of codes) {
+  lines.push(
+    `  [${JSON.stringify(code)}, ${JSON.stringify(messages.get(code))}, ${JSON.stringify(codeSeverity(code))}],`,
+  );
+}
+
+const changeLines = [];
+for (const code of [...changes.keys()].sort()) {
+  // Before its first dated change, the code had the severity of that first change.
+  const timeline = [...changes.get(code).entries()].sort(([left], [right]) =>
+    left.localeCompare(right),
+  );
+  const base = timeline[0][1] === 'observation' ? 'observation' : codeSeverity(code);
+  const index = codes.indexOf(code);
+  if (index !== -1)
+    lines[index] = lines[index].replace(/, "(?:error|observation)"\],$/, `, "${base}"],`);
+  changeLines.push(
+    `  [${JSON.stringify(code)}, [${timeline.map(([from, value]) => `[${JSON.stringify(from)}, ${JSON.stringify(value)}]`).join(', ')}]],`,
+  );
+}
+
+const file = `// Generated by scripts/sunat/generate-return-codes.mjs from
+// sources/sunat/reglas-validacion-2026-08-26/codigos-retorno.csv and control-de-cambios.csv.
+// Do not edit by hand.
+export type Severity = 'error' | 'observation';
+
+export const returnCodes: readonly (readonly [string, string, Severity])[] = [
+${lines.join('\n')}
+];
+
+export const returnCodeChanges: readonly (readonly [string, readonly (readonly [string, Severity])[]])[] = [
+${changeLines.join('\n')}
+];
+`;
+
+// Formatted by Biome, so the committed file is exactly what the generator produces.
+const formatted = execFileSync(
+  process.execPath,
+  ['node_modules/@biomejs/biome/bin/biome', 'format', `--stdin-file-path=${output}`],
+  { input: file, encoding: 'utf8' },
+);
+
+if (process.argv.includes('--check')) {
+  // Git may check the file out with CRLF on Windows; compare content, not line endings.
+  const lf = (text) => text.replace(/\r\n/g, '\n');
+  if (lf(readFileSync(output, 'utf8')) !== lf(formatted)) {
+    // biome-ignore lint/suspicious/noConsole: the check explains why it failed.
+    console.error(`${output} is out of date with the SUNAT CSVs. Run pnpm catalogs.`);
+    process.exit(1);
+  }
+} else {
+  writeFileSync(output, formatted);
+  // biome-ignore lint/suspicious/noConsole: the generator reports what it wrote.
+  console.log(
+    `Wrote ${codes.length} return codes and ${changeLines.length} dated changes to ${output}`,
+  );
+}
