@@ -4,9 +4,9 @@ Tribu is an open-source TypeScript SDK for issuing Peruvian electronic payment d
 
 ## Status
 
-**Design complete; no code yet.** The next step is Milestone 0 ([docs/plan/milestone-0.md](docs/plan/milestone-0.md)): a throwaway experiment in `poc/` that signs and sends documents to SUNAT beta. Then comes v0.1 ([docs/plan/v0.1-scope.md](docs/plan/v0.1-scope.md)).
+**v0.1 is implemented against its specification; `pnpm check` and `pnpm build` pass.** The test suite written before the code lives in `src/` and is the contract. The next step is Milestone 0 ([docs/plan/milestone-0.md](docs/plan/milestone-0.md)): a throwaway experiment in `poc/` that signs and sends documents to SUNAT beta, confirms the open `test.todo` questions and produces the golden fixtures. Then comes the v0.1 release ([docs/plan/v0.1-scope.md](docs/plan/v0.1-scope.md)).
 
-Tooling is configured; `src/` does not exist yet. **Never invent commands:** these are the only ones.
+Tooling is configured. **Never invent commands:** these are the only ones.
 
 | Command | What it does |
 |---|---|
@@ -16,7 +16,9 @@ Tooling is configured; `src/` does not exist yet. **Never invent commands:** the
 | `pnpm deps` | dependency-cruiser layer rules (`.dependency-cruiser.cjs`). Fails until `src/` exists |
 | `pnpm test` | Vitest, `unit` project: `src/**/*.test.ts` and `test/golden/` |
 | `pnpm test:beta` | Vitest, `beta` project: `test/beta/`, against SUNAT beta. Manual only |
-| `pnpm check` | typecheck + lint + deps + test |
+| `pnpm catalogs` | Regenerate `src/catalogs/data/` from the SUNAT CSVs in `sources/sunat/` (ADR 0005) |
+| `pnpm catalogs:check` | Fail if `src/catalogs/data/` differs from what the CSVs produce |
+| `pnpm check` | typecheck + lint + deps + catalogs:check + test |
 | `pnpm build` | tsdown, one entry per public entry point (`tsdown.config.ts`). Fails until those files exist |
 | `pnpm changeset` | Record a user-facing change |
 
