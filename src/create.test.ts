@@ -225,8 +225,8 @@ describe('tribu.create: options take constants only (ADRs 0012, 0018)', () => {
   });
 
   test('rejects a free-text IGV regime', () => {
-    // @ts-expect-error a string is not an IGV Regime
     configError(() =>
+      // @ts-expect-error a string is not an IGV Regime
       tribu.create({ ...base(), env: 'beta', issuer: { ...ISSUER, igv: 'restaurant-hotel-mype' } }),
     );
   });

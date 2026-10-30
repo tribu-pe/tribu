@@ -1,6 +1,6 @@
 # Structure and context
 
-What Tribu is made of and how its pieces relate. The layout below is the **target**; nothing exists under `src/` yet. Words in capitals are defined in [GLOSSARY.md](../../GLOSSARY.md).
+What Tribu is made of and how its pieces relate. The layout below is implemented under `src/`; the test suite is the contract. Words in capitals are defined in [GLOSSARY.md](../../GLOSSARY.md).
 
 ## The idea in one paragraph
 
@@ -10,14 +10,14 @@ A Document is data, and every step turns it into other data: input → calculate
 
 ```
 src/
-  catalogs/            Domain          SUNAT code lists: data files + generated constants (Catalog.define)
-    data/*.yaml                        the source of truth, edited by people; types and docs are generated
+  catalogs/            Domain          SUNAT code lists (Catalog.define)
+    shared.ts                          catalogs 01–07: the entries Tribu uses, transcribed from catalogos.csv (ADR 0005)
+    data/*.ts                          generated from sources/sunat/ by `pnpm catalogs`; never edited by hand
     documents/<doc>.ts                 catalogs owned by one document (Reason for credit-note / debit-note)
   documents/           Domain          Invoice, Receipt, CreditNote, DebitNote; calculate(); Value Objects; predicates
   rules/               Domain          one Rule per file (Rule.define); validate() is the rule engine
     <document>/<id>.ts + <id>.test.ts
-  xml/                 Domain          build(): Document → UBL 2.1 XML, one typed function per UBL part
-    parts/
+  xml/                 Domain          build(): Document → UBL 2.1 XML; summary and voided-documents reports
   results/             Domain          Status (Lifecycle.define), TribuError, TribuRecord
   signing/             Infrastructure  sign(): XMLDSig with the Certificate
   transport/           Infrastructure  send() and read(): ZIP + SOAP to SUNAT, Tickets, recovery strategy
@@ -79,11 +79,12 @@ return record(document, signed, read(answer));        // → TribuRecord
 
 | SUNAT changed… | Edit | Also add |
 |---|---|---|
-| a catalog value or its dates | `src/catalogs/data/<catalog>.yaml` | regenerate; the CI checks it |
-| whether a code is an error or an observation | the `ReturnCode` data (dated entry) | nothing else: Rule severity derives from it (ADR 0011) |
+| a new workbook version | the CSVs in `sources/sunat/` | `pnpm catalogs`; `pnpm check` fails until generated code and transcribed catalogs match (ADR 0005) |
+| a catalog value Tribu uses | `src/catalogs/shared.ts` or `src/catalogs/documents/<doc>.ts`, after the CSV | nothing else: `src/catalogs/sources.test.ts` checks it against the CSV |
+| whether a code is an error or an observation | nothing by hand: it comes from the CSVs with `pnpm catalogs` | Rule severity derives from it (ADR 0011) |
 | a Rule or its Effective Date | `src/rules/<document>/<id>.ts` | its `<id>.test.ts` |
-| an IGV rate | `src/catalogs/data/igv-regime.yaml` (dated line) | |
-| an XML field | type in `documents/`, function in `xml/parts/` | a golden fixture |
+| an IGV rate | `src/catalogs/igv.ts` (dated line) | |
+| an XML field | type in `documents/`, function in `xml/build.ts` | a golden fixture |
 | an endpoint or protocol | `src/transport/` | |
 | a new document type | `documents/`, `xml/`, `rules/`, a method in `create.ts` | a minor version |
 

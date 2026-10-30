@@ -13,7 +13,7 @@ describe('public entry points', () => {
   });
 
   test('tribu/values: the Value Objects', () => {
-    expect(Object.keys(values).sort()).toEqual(['DocumentId', 'Dni', 'Money', 'Ruc']);
+    expect(Object.keys(values).sort()).toEqual(['Dni', 'DocumentId', 'Money', 'Ruc']);
   });
 
   test('tribu/results: what comes back', () => {
