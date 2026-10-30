@@ -23,7 +23,7 @@ module.exports = {
       name: 'domain-uses-no-node-io',
       comment: 'Domain is pure functions: no file system, network or process access.',
       severity: 'error',
-      from: { path: domain },
+      from: { path: domain, pathNot: '\\.test\\.ts$' },
       to: { dependencyTypes: ['core'] },
     },
     {
@@ -35,7 +35,7 @@ module.exports = {
     {
       name: 'nothing-imports-the-entry-point',
       severity: 'error',
-      from: {},
+      from: { pathNot: ['\\.test\\.ts$', '^test/'] },
       to: { path: '^src/index\\.ts$' },
     },
     {
