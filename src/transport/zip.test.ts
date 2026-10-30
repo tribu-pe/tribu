@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { strFromU8, unzipSync } from 'fflate';
 import { describe, expect, test } from 'vitest';
 import { unzipXml, zipDocument } from './zip';
@@ -13,5 +14,14 @@ describe('zip', () => {
   test('round trips the exact bytes, so the signature still verifies', () => {
     const xml = '<Invoice>Señor &amp; Cía</Invoice>';
     expect(unzipXml(zipDocument('20000000001-01-F001-1', xml))).toBe(xml);
+  });
+
+  // A real CDR from SUNAT beta (Milestone 0): an empty dummy/ folder comes before the XML.
+  test("reads the XML of SUNAT's CDR ZIP, skipping its dummy/ folder", () => {
+    const zip = readFileSync(
+      new URL('../../fixtures/sunat/beta/invoice-accepted.zip', import.meta.url),
+    );
+    expect(Object.keys(unzipSync(zip))[0]).toBe('dummy/');
+    expect(unzipXml(zip)).toMatch(/^<\?xml[\s\S]*<ar:ApplicationResponse/);
   });
 });

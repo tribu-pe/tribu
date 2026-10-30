@@ -88,7 +88,21 @@ describe('SUNAT answers', () => {
     expect(answer.cdr?.code).toBe('2047');
   });
 
-  test('a SOAP fault keeps the code from faultcode (format unconfirmed until Milestone 0)', async () => {
+  // Milestone 0: beta answered a Daily Summary with this fault and HTTP 200.
+  test('a fault sent with HTTP 200 is still a fault, with its code', async () => {
+    stubFetch(
+      soapResponse(
+        '<soap-env:Fault><faultcode>soap-env:Client.2074</faultcode><faultstring>UBLVersionID - La versi&#243;n del UBL no es correcta</faultstring></soap-env:Fault>',
+      ),
+    );
+    const error = await transport()
+      .sendSummary({ fileName: '20000000001-RC-20261030-1', zip: new Uint8Array() })
+      .catch((reason: unknown) => reason);
+    expect((error as TransportFailure).code).toBe('2074');
+  });
+
+  // Format confirmed in beta (Milestone 0): faultcode is soap-env:Client.<code>.
+  test('a SOAP fault keeps the code from faultcode', async () => {
     stubFetch(
       soapResponse(
         '<soapenv:Fault><faultcode>soap-env:Client.0102</faultcode><faultstring>Usuario o contrasena incorrectos</faultstring></soapenv:Fault>',
@@ -129,6 +143,21 @@ describe('network failures and retry safety (ADR 0015)', () => {
       .sendBill({ fileName: '20000000001-01-F001-1', zip: new Uint8Array() })
       .catch((reason: unknown) => reason);
     expect((error as TransportFailure).sent).toBe(false);
+  });
+
+  // Milestone 0: SUNAT accepted an Invoice, the CDR could not be read, and the old code
+  // re-sent it as if it never left. Reading happens after arrival: always sent true.
+  test('an answer that cannot be read still counts as sent', async () => {
+    stubFetch(
+      soapResponse(
+        '<br:sendBillResponse xmlns:br="http://service.sunat.gob.pe"><applicationResponse>bm90IGEgemlw</applicationResponse></br:sendBillResponse>',
+      ),
+    );
+    const error = await transport()
+      .sendBill({ fileName: '20000000001-01-F001-1', zip: new Uint8Array() })
+      .catch((reason: unknown) => reason);
+    expect(error).toBeInstanceOf(TransportFailure);
+    expect((error as TransportFailure).sent).toBe(true);
   });
 
   test('a reset connection may have arrived: sent true', async () => {
