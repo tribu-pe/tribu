@@ -1,0 +1,33 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Teclado",
+        "quantity": 2,
+        "price": 118
+      }
+    ],
+    "rounding": {
+      "rounding": "half-up"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "general",
+      "name": "Régimen general",
+      "source": "Ley 32387"
+    }
+  },
+  "totals": {
+    "taxed": "200",
+    "exempt": "0",
+    "unaffected": "0",
+    "igv": "36",
+    "value": "200",
+    "payable": "236"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93398964, ha sido aceptada",
+    "observations": []
+  }
+}

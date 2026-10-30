@@ -1,0 +1,33 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Cable",
+        "quantity": 2.75,
+        "value": 3.333
+      }
+    ],
+    "rounding": {
+      "rounding": "half-up"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "general",
+      "name": "Régimen general",
+      "source": "Ley 32387"
+    }
+  },
+  "totals": {
+    "taxed": "9.17",
+    "exempt": "0",
+    "unaffected": "0",
+    "igv": "1.65",
+    "value": "9.17",
+    "payable": "10.82"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93398976, ha sido aceptada",
+    "observations": []
+  }
+}

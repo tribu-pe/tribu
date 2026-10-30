@@ -1,0 +1,33 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Arroz",
+        "quantity": 1.5,
+        "price": 12.5
+      }
+    ],
+    "rounding": {
+      "rounding": "half-up"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "general",
+      "name": "Régimen general",
+      "source": "Ley 32387"
+    }
+  },
+  "totals": {
+    "taxed": "15.89",
+    "exempt": "0",
+    "unaffected": "0",
+    "igv": "2.86",
+    "value": "15.89",
+    "payable": "18.75"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93398975, ha sido aceptada",
+    "observations": []
+  }
+}

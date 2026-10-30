@@ -1,0 +1,33 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Lapicero",
+        "quantity": 1,
+        "price": 10
+      }
+    ],
+    "rounding": {
+      "rounding": "half-up"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "general",
+      "name": "Régimen general",
+      "source": "Ley 32387"
+    }
+  },
+  "totals": {
+    "taxed": "8.47",
+    "exempt": "0",
+    "unaffected": "0",
+    "igv": "1.53",
+    "value": "8.47",
+    "payable": "10"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93398966, ha sido aceptada",
+    "observations": []
+  }
+}

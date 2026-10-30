@@ -25,9 +25,11 @@ describe('Decimal', () => {
     expect(Decimal.from('2.345').round(2, Rounding.HalfUp).toFixed(2)).toBe('2.35');
   });
 
-  test.todo(
-    'rounds half-even with Rounding.HalfEven, once Milestone 0 proves SUNAT accepts it (ADR 0018)',
-  );
+  // Milestone 0: beta accepted the half-cent cases in both modes (fixtures/rounding/).
+  test('rounds half-even with Rounding.HalfEven', () => {
+    expect(Decimal.from('2.345').round(2, Rounding.HalfEven).toFixed(2)).toBe('2.34');
+    expect(Decimal.from('0.125').round(2, Rounding.HalfEven).toFixed(2)).toBe('0.12');
+  });
 
   test('prints a fixed number of decimals for the XML', () => {
     expect(Decimal.from('236').toFixed(2)).toBe('236.00');

@@ -1,0 +1,33 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Habitación",
+        "quantity": 3,
+        "value": 99.99
+      }
+    ],
+    "rounding": {
+      "rounding": "half-up"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "hospitality",
+      "name": "Restaurantes y hoteles",
+      "source": "Ley 31556 (as amended by Ley 32219)"
+    }
+  },
+  "totals": {
+    "taxed": "299.97",
+    "exempt": "0",
+    "unaffected": "0",
+    "igv": "31.5",
+    "value": "299.97",
+    "payable": "331.47"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93398989, ha sido aceptada",
+    "observations": []
+  }
+}

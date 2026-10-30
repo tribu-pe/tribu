@@ -1,0 +1,33 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Clavo",
+        "quantity": 1,
+        "price": 1.005
+      }
+    ],
+    "rounding": {
+      "rounding": "half-up"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "general",
+      "name": "Régimen general",
+      "source": "Ley 32387"
+    }
+  },
+  "totals": {
+    "taxed": "0.86",
+    "exempt": "0",
+    "unaffected": "0",
+    "igv": "0.15",
+    "value": "0.86",
+    "payable": "1.01"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93398970, ha sido aceptada",
+    "observations": []
+  }
+}
