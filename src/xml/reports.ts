@@ -1,8 +1,11 @@
+import { Decimal } from '../documents/decimal';
 import type { Document, Issuer } from '../documents/document';
+import { isAnonymous } from '../documents/predicates';
 
 const SUMMARY_NS = 'urn:sunat:names:specification:ubl:peru:schema:xsd:SummaryDocuments-1';
 const VOIDED_NS = 'urn:sunat:names:specification:ubl:peru:schema:xsd:VoidedDocuments-1';
-const SAC = 'urn:sunat:names:specification:ubl:peru:schema:xsd:CommonAggregateComponents-2';
+// The sac namespace SUNAT's own CDRs declare (Milestone 0).
+const SAC = 'urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1';
 const CBC = 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2';
 const CAC = 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2';
 const EXT = 'urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2';
@@ -33,11 +36,74 @@ function extensions(): string {
   return '<ext:UBLExtensions><ext:UBLExtension><ext:ExtensionContent/></ext:UBLExtension></ext:UBLExtensions>';
 }
 
+function money(name: string, currency: string, value: Decimal): string {
+  return `<${name} currencyID="${escapeXml(currency)}">${value.toFixed(2)}</${name}>`;
+}
+
+/** The reports' older issuer format: RUC (ERR 1034), type 6 (ERR 2218) and name. */
 function supplier(issuer: Issuer): string {
   return element('cac:AccountingSupplierParty', [
-    element('cac:Party', [
-      element('cac:PartyIdentification', tag('cbc:ID', issuer.ruc.value)),
-      element('cac:PartyLegalEntity', tag('cbc:RegistrationName', issuer.name)),
+    tag('cbc:CustomerAssignedAccountID', issuer.ruc.value),
+    tag('cbc:AdditionalAccountID', '6'),
+    element('cac:Party', element('cac:PartyLegalEntity', tag('cbc:RegistrationName', issuer.name))),
+  ]);
+}
+
+const ZERO = Decimal.from(0);
+
+/** resumen-diario-1.1.csv: value of sale per catalog 11 code, only when there is one. */
+function payments(document: Document, currency: string): string[] {
+  const { taxed, exempt, unaffected } = document.totals;
+  return (
+    [
+      ['01', taxed],
+      ['02', exempt],
+      ['03', unaffected],
+    ] as const
+  )
+    .filter(([, amount]) => !amount.equals(ZERO))
+    .map(([code, amount]) =>
+      element('sac:BillingPayment', [
+        money('cbc:PaidAmount', currency, amount),
+        tag('cbc:InstructionID', code),
+      ]),
+    );
+}
+
+function summaryLine(line: SummaryLine, index: number): string {
+  const { document } = line;
+  const currency = document.currency.code;
+  const customer = isAnonymous(document.customer)
+    ? []
+    : [
+        element('cac:AccountingCustomerParty', [
+          tag('cbc:CustomerAssignedAccountID', String(document.customer.number)),
+          tag('cbc:AdditionalAccountID', document.customer.identity.code),
+        ]),
+      ];
+  const igv = money('cbc:TaxAmount', currency, document.totals.igv);
+  return element('sac:SummaryDocumentsLine', [
+    tag('cbc:LineID', String(index + 1)),
+    tag('cbc:DocumentTypeCode', document.type.code),
+    tag('cbc:ID', `${document.series}-${document.number ?? ''}`),
+    ...customer,
+    element('cac:Status', tag('cbc:ConditionCode', line.condition)),
+    money('sac:TotalAmount', currency, document.totals.payable),
+    ...payments(document, currency),
+    element('cac:TaxTotal', [
+      igv,
+      element('cac:TaxSubtotal', [
+        igv,
+        // ERR 2992: the rate is required for IGV (10.5 or 18 on a Receipt, ERR 3504).
+        element('cac:TaxCategory', [
+          tag('cbc:Percent', document.igvRate.toFixed(2)),
+          element('cac:TaxScheme', [
+            tag('cbc:ID', '1000'),
+            tag('cbc:Name', 'IGV'),
+            tag('cbc:TaxTypeCode', 'VAT'),
+          ]),
+        ]),
+      ]),
     ]),
   ]);
 }
@@ -58,28 +124,20 @@ export interface SummaryInput {
 
 /** The Daily Summary (resumen diario) of Receipts. */
 export function buildSummary(input: SummaryInput): string {
-  const lines = input.lines.map((line, index) =>
-    element('sac:SummaryDocumentsLine', [
-      tag('cbc:LineID', String(index + 1)),
-      tag('cbc:DocumentTypeCode', '03'),
-      tag('cbc:ID', `${line.document.series}-${line.document.number ?? ''}`),
-      element('cac:Status', tag('cbc:ConditionCode', line.condition)),
-      tag('cbc:TotalAmount', line.document.totals.payable.toFixed(2)),
-    ]),
-  );
   return element(
     'SummaryDocuments',
     [
-      tag('cbc:UBLVersionID', '1.1'),
+      extensions(),
+      // resumen-diario-1.1.csv: UBL 2.0 (ERR 2074), structure 1.1 (ERR 2072).
+      tag('cbc:UBLVersionID', '2.0'),
       tag('cbc:CustomizationID', '1.1'),
       tag('cbc:ID', input.id),
       tag('cbc:ReferenceDate', input.referenceDate),
       tag('cbc:IssueDate', input.issueDate),
-      extensions(),
       supplier(input.issuer),
-      ...lines,
+      ...input.lines.map(summaryLine),
     ],
-    namespaces(SUMMARY_NS, SUMMARY_NS),
+    namespaces(SUMMARY_NS, SAC),
   );
 }
 
@@ -106,12 +164,13 @@ export function buildVoidedDocuments(input: VoidedInput): string {
   return element(
     'VoidedDocuments',
     [
-      tag('cbc:UBLVersionID', '1.0'),
+      extensions(),
+      // comunicacion-de-baja-1.0.csv: UBL 2.0 (ERR 2074), structure 1.0 (ERR 2072).
+      tag('cbc:UBLVersionID', '2.0'),
       tag('cbc:CustomizationID', '1.0'),
       tag('cbc:ID', input.id),
       tag('cbc:ReferenceDate', input.referenceDate),
       tag('cbc:IssueDate', input.issueDate),
-      extensions(),
       supplier(input.issuer),
       ...lines,
     ],

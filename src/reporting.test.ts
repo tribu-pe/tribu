@@ -41,6 +41,9 @@ describe('sunat.dailySummary', () => {
     const { record } = await sunat.dailySummary({ date: '2026-10-23', issued: [b1], number: 1 });
     const root = parseXml(record.xml);
     expect(root.tagName).toBe('SummaryDocuments');
+    // resumen-diario-1.1.csv: UBL 2.0 (ERR 2074), structure 1.1 (ERR 2072).
+    expect(text(root, 'cbc:UBLVersionID')).toBe('2.0');
+    expect(text(root, 'cbc:CustomizationID')).toBe('1.1');
     expect(text(root, 'cbc:ReferenceDate')).toBe('2026-10-23');
     expect(
       all(root, 'sac:SummaryDocumentsLine/cac:Status/cbc:ConditionCode').map(
@@ -171,6 +174,9 @@ describe('sunat.voidDocuments', () => {
       'Error en los datos del cliente',
     );
     expect(text(root, 'sac:VoidedDocumentsLine/sac:DocumentSerialID')).toBe('F001');
+    // comunicacion-de-baja-1.0.csv: UBL 2.0 (ERR 2074), structure 1.0 (ERR 2072).
+    expect(text(root, 'cbc:UBLVersionID')).toBe('2.0');
+    expect(text(root, 'cbc:CustomizationID')).toBe('1.0');
   });
 
   test('after SUNAT accepts, the invoice Record is Voided', async () => {
