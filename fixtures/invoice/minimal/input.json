@@ -1,0 +1,15 @@
+{
+  "customer": {
+    "ruc": "20123456786",
+    "name": "CLIENTE SAC"
+  },
+  "items": [
+    {
+      "description": "Teclado",
+      "quantity": 2,
+      "price": 118
+    }
+  ],
+  "number": 93399014,
+  "issueDate": "2026-10-30"
+}

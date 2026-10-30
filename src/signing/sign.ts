@@ -1,5 +1,6 @@
 import { SignedXml } from 'xml-crypto';
 import { Signature, type SignatureValue } from '../options';
+import { SIGNATURE_ID } from '../xml/build';
 import type { OpenCertificate } from './certificate';
 
 const DSIG = 'http://www.w3.org/2000/09/xmldsig#';
@@ -32,6 +33,7 @@ export function sign(
   });
   signer.computeSignature(xml, {
     prefix: 'ds',
+    attrs: { Id: SIGNATURE_ID },
     location: { reference: "//*[local-name()='ExtensionContent']", action: 'append' },
   });
   return signer.getSignedXml().replace(/\r/g, '');
