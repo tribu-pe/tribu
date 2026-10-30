@@ -122,6 +122,18 @@ describe('sunat.invoice: when something goes wrong', () => {
     expect(error.message).toMatch(/0102/);
   });
 
+  // Milestone 0: beta rejected content (3030) with a SOAP fault, not a CDR. The code's class
+  // decides, so the Number counts as used and the advice is a new document.
+  test('a rejection that arrives as a SOAP fault is Rejected, without a CDR (ADR 0014)', async () => {
+    const { sunat } = createTestClient({}, { exception: { 'F001-17': '3030' } });
+    const error = await caught(sunat.invoice({ customer: CUSTOMER, items, number: 17 }));
+    expect(error.kind).toBe('rejected');
+    expect(error.record?.status).toBe(Status.Rejected);
+    expect(error.record?.cdr).toBeUndefined();
+    expect(error.issues[0]?.code).toBe('3030');
+    expect(error.issues[0]?.fix).toMatch(/new Number/);
+  });
+
   test('observations are a success, listed in the CDR', async () => {
     const { sunat } = createTestClient({}, { observe: { 'F001-15': ['4031'] } });
     const { record } = await sunat.invoice({ customer: CUSTOMER, items, number: 15 });
