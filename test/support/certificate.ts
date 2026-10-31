@@ -12,7 +12,13 @@ export interface TestCertificate {
  * repository (AGENTS.md rule 5); this one exists only in memory.
  */
 export function generateTestCertificate(
-  options: { notBefore?: string; notAfter?: string; passphrase?: string } = {},
+  options: {
+    notBefore?: string;
+    notAfter?: string;
+    passphrase?: string;
+    /** Put an unrelated CA certificate before the real one, as some providers' .pfx files do. */
+    caFirst?: boolean;
+  } = {},
 ): TestCertificate {
   const passphrase = options.passphrase ?? 'test-passphrase';
   const { privateKey, publicKey } = generateKeyPairSync('rsa', {
@@ -35,7 +41,20 @@ export function generateTestCertificate(
   const key = forge.pki.privateKeyFromPem(privateKey);
   certificate.sign(key, forge.md.sha256.create());
 
-  const p12 = forge.pkcs12.toPkcs12Asn1(key, [certificate], passphrase, { algorithm: '3des' });
+  const chain = [certificate];
+  if (options.caFirst === true) {
+    const ca = forge.pki.createCertificate();
+    ca.publicKey = forge.pki.rsa.generateKeyPair({ bits: 1024 }).publicKey;
+    ca.serialNumber = '02';
+    ca.validity.notBefore = certificate.validity.notBefore;
+    ca.validity.notAfter = certificate.validity.notAfter;
+    ca.setSubject([{ name: 'commonName', value: 'AUTORIDAD DE PRUEBA' }]);
+    ca.setIssuer([{ name: 'commonName', value: 'AUTORIDAD DE PRUEBA' }]);
+    ca.sign(key, forge.md.sha256.create());
+    chain.unshift(ca);
+  }
+
+  const p12 = forge.pkcs12.toPkcs12Asn1(key, chain, passphrase, { algorithm: '3des' });
   const pfx = Buffer.from(forge.asn1.toDer(p12).getBytes(), 'binary');
   return { pfx, passphrase, certificatePem: forge.pki.certificateToPem(certificate) };
 }

@@ -12,6 +12,12 @@ describe('openCertificate', () => {
     expect(certificate.certificatePem).toMatch(/BEGIN CERTIFICATE/);
   });
 
+  test('picks the certificate that matches the key when a CA is listed first', () => {
+    const { pfx, passphrase, certificatePem } = generateTestCertificate({ caFirst: true });
+    const certificate = openCertificate(pfx, passphrase);
+    expect(certificate.certificatePem).toBe(certificatePem);
+  });
+
   test('a wrong passphrase is a config error, without echoing the passphrase', () => {
     const { pfx } = testCertificate();
     try {
