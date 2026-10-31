@@ -82,6 +82,7 @@ In production, `sol` and `env` usually come from the environment: `SUNAT_ENV`, `
 | [Configuration](docs/guide/configuration.md) | Environments, options, entry points |
 | [SUNAT deadlines](docs/guide/deadlines.md) | The deadlines Tribu checks |
 | [Trying it in production](docs/guide/production.md) | What you need and what is not verified yet |
+| [@tribu-pe/pdf](https://github.com/tribu-pe/pdf) | The PDF for your Customer (Printed Representation): A4 and ticket, a separate package |
 
 The whole guide: [docs/guide](docs/guide/README.md). The vocabulary: [GLOSSARY.md](GLOSSARY.md).
 
@@ -97,7 +98,7 @@ The whole guide: [docs/guide](docs/guide/README.md). The vocabulary: [GLOSSARY.m
 | Payment Terms | Cash, or credit with Installments |
 | Detracciones | On Invoices in soles; the amount and the net amount pending are calculated |
 
-**Not yet:** detracciones on Receipts or in USD, perceptions, retentions, advance payments, exports and Invoices without RUC, free operations, ISC, ICBPER, the dispatch guide, PDF and QR images, and official support for OSEs (a custom `transport` works, but OSEs are not tested).
+**Not yet:** detracciones on Receipts or in USD, perceptions, retentions, advance payments, exports and Invoices without RUC, free operations, ISC, ICBPER, the dispatch guide, and official support for OSEs (a custom `transport` works, but OSEs are not tested).
 
 ## Contributing
 

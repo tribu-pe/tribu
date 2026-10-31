@@ -6,6 +6,8 @@ Tribu no guarda nada. Cada operación devuelve un `record`: JSON simple y serial
 
 **Guarda el `record` antes que cualquier otra cosa.**
 
+Para entregarle al cliente un PDF con el QR de SUNAT (la representación impresa), pásale el Record a [`@tribu-pe/pdf`](https://github.com/tribu-pe/pdf): `await pdf(record)`.
+
 Compara estados por su código, que sobrevive a JSON:
 
 ```ts
