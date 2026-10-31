@@ -4,7 +4,7 @@ Tribu is an open-source TypeScript SDK for issuing Peruvian electronic payment d
 
 ## Status
 
-**v0.1 is implemented and Milestone 0 is done:** every document type and report is accepted by SUNAT beta ([docs/research/milestone-0-results.md](docs/research/milestone-0-results.md)). `pnpm check` and `pnpm build` pass; `pnpm test:beta` passes against beta. It is published to npm only under the `experimental` tag (`publishConfig` in `package.json`, versions `0.1.0-experimental.N`); a stable v0.1 waits until someone verifies it in production ([docs/plan/v0.1-scope.md](docs/plan/v0.1-scope.md)).
+**v0.1 is implemented and Milestone 0 is done:** every document type and report is accepted by SUNAT beta ([docs/research/milestone-0-results.md](docs/research/milestone-0-results.md)). `pnpm check` and `pnpm build` pass; `pnpm test:beta` passes against beta. It is published to npm only under the `experimental` tag (`publishConfig` in `package.json`, versions `0.1.0-experimental.N`). npm also pointed `latest` at the first experimental version, since it was the package's first publish; a stable v0.1 waits until someone verifies it in production ([docs/plan/v0.1-scope.md](docs/plan/v0.1-scope.md)).
 
 Tooling is configured. **Never invent commands:** these are the only ones.
 
