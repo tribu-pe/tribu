@@ -27,7 +27,6 @@ Never put your SOL password, `.pfx` or passphrase in your code, your repository 
 
 Beta could not answer these ([Milestone 0 results](../research/milestone-0-results.md)). If you see one of them happen, your report is especially valuable.
 
-- **The production address.** Tribu sends to `https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService`. The repository does not yet cite an official source for it.
 - **Rejections that arrive as a SOAP fault.** Does SUNAT keep the Number as used? Tribu assumes it does.
 - **Sending the same Document twice.** Beta accepts it again. Whether production answers with a duplicate code such as 1033 is *unconfirmed*.
 - **Recovering a lost Receipt answer.** Tribu stops and lets you decide.
