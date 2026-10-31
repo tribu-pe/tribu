@@ -1,6 +1,7 @@
 import { Decimal } from '../documents/decimal';
 import type { Document, Issuer } from '../documents/document';
 import { isAnonymous } from '../documents/predicates';
+import { escapeXml } from './escape';
 
 const SUMMARY_NS = 'urn:sunat:names:specification:ubl:peru:schema:xsd:SummaryDocuments-1';
 const VOIDED_NS = 'urn:sunat:names:specification:ubl:peru:schema:xsd:VoidedDocuments-1';
@@ -9,15 +10,6 @@ const SAC = 'urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateCom
 const CBC = 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2';
 const CAC = 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2';
 const EXT = 'urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2';
-
-function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
 
 function tag(name: string, value: string): string {
   return `<${name}>${escapeXml(value)}</${name}>`;

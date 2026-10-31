@@ -2,6 +2,7 @@ import { DocumentType } from '../catalogs/shared';
 import type { Decimal } from '../documents/decimal';
 import type { Document, Item, TaxScheme } from '../documents/document';
 import { isAnonymous } from '../documents/predicates';
+import { escapeXml } from './escape';
 
 const NS = {
   Invoice: 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
@@ -12,15 +13,6 @@ const NS = {
   ext: 'urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2',
   ds: 'http://www.w3.org/2000/09/xmldsig#',
 };
-
-function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
 
 function attributes(values: Record<string, string | undefined>): string {
   return Object.entries(values)
