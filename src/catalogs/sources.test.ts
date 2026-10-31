@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import { Reason as CreditReason } from './documents/credit-note';
 import { Reason as DebitReason } from './documents/debit-note';
-import { Affectation, DocumentType, Identity } from './index';
+import { Affectation, Detraccion, DocumentType, Identity } from './index';
 
-// ADR 0005: SUNAT's CSVs are the source of truth. Catalogs 01, 06, 07, 09 and 10 are transcribed
+// ADR 0005: SUNAT's CSVs are the source of truth. Catalogs 01, 06, 07, 09, 10 and 54 are transcribed
 // by hand (only the entries Tribu uses, under English names), so this test holds each one to the CSV.
 const CSV = 'sources/sunat/reglas-validacion-2026-08-26/catalogos.csv';
 
@@ -69,6 +69,7 @@ describe.each([
   ['07', Affectation],
   ['09', CreditReason],
   ['10', DebitReason],
+  ['54', Detraccion],
 ])('catalog %s matches catalogos.csv', (number, catalog) => {
   test.each(catalog.all().map((entry) => [entry.code, entry.name]))('%s %s', (code, name) => {
     expect(sunatNames(number, code)).toContain(tidy(name));

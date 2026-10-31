@@ -3,6 +3,7 @@ import { type CreateOptions, create } from './create';
 export {
   Affectation,
   Currency,
+  Detraccion,
   DocumentType,
   Identity,
   Igv,
