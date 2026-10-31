@@ -7,7 +7,7 @@ labels: production-report
 <!-- Never paste your SOL password, Certificate or passphrase. Replace real customer data. -->
 <!-- Nunca pegues tu Clave SOL, tu certificado ni su contraseña. Cambia los datos reales de clientes. -->
 
-**Tribu commit / Commit de Tribu:**
+**Tribu version / Versión de Tribu:**
 **Date / Fecha:**
 
 ### What I issued / Qué emití

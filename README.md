@@ -14,7 +14,7 @@ Tribu calculates the amounts, validates the Document against SUNAT's rules befor
 [Leer en español](README.es.md)
 
 > [!WARNING]
-> **Experimental.** Tribu is not published to npm yet. SUNAT's beta environment accepts every document type it issues ([Milestone 0 results](docs/research/milestone-0-results.md)), but it has **not been verified in production**. Try it in beta first. If you use it in production, read [Trying it in production](docs/guide/production.md) and please [tell us how it went](https://github.com/tribu-pe/tribu/issues/new?template=production-report.md).
+> **Experimental.** Tribu is published only as an experimental version. SUNAT's beta environment accepts every document type it issues ([Milestone 0 results](docs/research/milestone-0-results.md)), but it has **not been verified in production**. Try it in beta first. If you use it in production, read [Trying it in production](docs/guide/production.md) and please [tell us how it went](https://github.com/tribu-pe/tribu/issues/new?template=production-report.md).
 
 > [!IMPORTANT]
 > **v0.1 does not support detracciones.** If your invoices are subject to them, don't use v0.1 for those invoices yet. Perceptions, retentions, advance payments, exports, free operations, ISC and ICBPER are also out of scope (see [What v0.1 covers](#what-v01-covers)).
@@ -30,15 +30,13 @@ Without Tribu you compute the IGV, write the UBL XML, sign it, zip it, send it o
 
 ## Installation
 
-Until the first release on npm, install it straight from GitHub. The package builds itself while installing.
-
 ```sh
-npm install github:tribu-pe/tribu
+npm install tribu@experimental
+# or
+pnpm add tribu@experimental
 ```
 
-To stay on a version you tested, pin a commit: `npm install github:tribu-pe/tribu#<commit>`.
-
-With pnpm (`pnpm add github:tribu-pe/tribu`), pnpm blocks the build at first and prints an `allowBuilds` entry. Add that entry to your `pnpm-workspace.yaml` and run `pnpm add` again.
+The `experimental` versions (`0.1.0-experimental.N`) are tested against SUNAT beta only. A stable version will follow once Tribu is verified in production.
 
 ## Quick start
 
