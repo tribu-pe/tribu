@@ -3,7 +3,7 @@ import type { IgvRegime } from '../catalogs/igv';
 import { Igv } from '../catalogs/igv';
 import { Affectation, Currency, DocumentType, Identity, Unit } from '../catalogs/shared';
 import { Rounding, type RoundingValue } from '../options';
-import { type Issue, TribuError } from '../results/tribu-error';
+import { type Issue, issue, TribuError } from '../results/tribu-error';
 import { Decimal } from './decimal';
 import { Dni } from './dni';
 import type {
@@ -19,6 +19,7 @@ import type {
   TaxScheme,
   Totals,
 } from './document';
+import { badNumber, isDocumentNumber } from './document-id';
 import { Money } from './money';
 import { anonymousCustomer } from './predicates';
 import { Ruc } from './ruc';
@@ -86,11 +87,6 @@ export interface DocumentInput {
   readonly reason?: CatalogEntry;
 }
 
-export type InvoiceInput = DocumentInput;
-export type ReceiptInput = DocumentInput;
-export type CreditNoteInput = DocumentInput;
-export type DebitNoteInput = DocumentInput;
-
 const DEFAULT_SERIES: SeriesConfig = {
   invoice: 'F001',
   receipt: 'B001',
@@ -102,8 +98,24 @@ const ZERO = Decimal.from(0);
 const ONE = Decimal.from(1);
 const HUNDRED = Decimal.from(100);
 
-function issue(path: string, code: string, why: string, fix: string, source: string): Issue {
-  return { code, path, why, fix, source };
+/**
+ * A real calendar date as YYYY-MM-DD. The deadline Rules compare dates by day count, and a text
+ * that is not a date gives NaN, which no `>` or `<` ever flags: it would pass every Rule.
+ */
+function isIsoDate(value: unknown): boolean {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const time = Date.parse(`${value}T00:00:00Z`);
+  return !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === value;
+}
+
+function badDate(path: string, value: unknown): Issue {
+  return issue(
+    path,
+    'tribu',
+    `"${String(value)}" is not a date in the form YYYY-MM-DD.`,
+    'Pass a real date such as "2026-10-31".',
+    'sources/sunat/reglas-validacion-2026-08-26/factura-2.0.csv',
+  );
 }
 
 function amountOf(value: number | string | Decimal | Money): Decimal {
@@ -140,6 +152,7 @@ function calculateItem(
   issues: Issue[],
 ): Item | undefined {
   const path = `items[${index}]`;
+  const issuesBefore = issues.length;
   const hasPrice = input.price !== undefined;
   const hasValue = input.value !== undefined;
   if (hasPrice === hasValue) {
@@ -189,6 +202,33 @@ function calculateItem(
   }
 
   const quantity = Decimal.from(input.quantity);
+  // v0.1 issues only onerous operations, so every amount of a line is positive (a free operation,
+  // the only case with a zero Unit Value, is out of scope): factura-2.0.csv, ERR 2024, 2025, 2367, 2369.
+  const amountPath = `${path}.${hasPrice ? 'price' : 'value'}`;
+  const positive = quantity.compare(ZERO) > 0;
+  if (!positive || !quantity.round(10).equals(quantity)) {
+    issues.push(
+      issue(
+        `${path}.quantity`,
+        quantity.equals(ZERO) ? '2024' : '2025',
+        'The quantity must be greater than zero, with at most 10 decimals.',
+        'Pass a quantity such as 1 or "0.5".',
+        'sources/sunat/reglas-validacion-2026-08-26/factura-2.0.csv',
+      ),
+    );
+  }
+  if (amount.compare(ZERO) <= 0) {
+    issues.push(
+      issue(
+        amountPath,
+        hasPrice ? '2367' : '2369',
+        `The ${hasPrice ? 'price' : 'value'} must be greater than zero.`,
+        'Pass the amount the customer is charged per unit; a free item is not supported in v0.1.',
+        'sources/sunat/reglas-validacion-2026-08-26/factura-2.0.csv',
+      ),
+    );
+  }
+  if (issues.length > issuesBefore) return undefined;
   const unit = input.unit ?? context.defaults.unit;
   const unitSource =
     input.unit !== undefined
@@ -222,6 +262,20 @@ function calculateItem(
     value = amount.times(quantity).round(2, context.rounding);
     igv = taxed ? value.times(context.rate).div(HUNDRED).round(2, context.rounding) : ZERO;
     total = value.plus(igv);
+  }
+
+  // ERR 2370: the line's value of sale is positive too, so a price that rounds to 0.00 is rejected.
+  if (value.compare(ZERO) <= 0) {
+    issues.push(
+      issue(
+        amountPath,
+        '2370',
+        'The line value of sale rounds to 0.00.',
+        'Raise the quantity or the amount so the line is worth at least 0.01.',
+        'sources/sunat/reglas-validacion-2026-08-26/factura-2.0.csv',
+      ),
+    );
+    return undefined;
   }
 
   return {
@@ -383,22 +437,22 @@ function seriesOf(
 
 export function calculate(
   type: typeof DocumentType.Invoice,
-  input: InvoiceInput,
+  input: DocumentInput,
   settings: CalculationSettings,
 ): Invoice;
 export function calculate(
   type: typeof DocumentType.Receipt,
-  input: ReceiptInput,
+  input: DocumentInput,
   settings: CalculationSettings,
 ): Receipt;
 export function calculate(
   type: typeof DocumentType.CreditNote,
-  input: CreditNoteInput,
+  input: DocumentInput,
   settings: CalculationSettings,
 ): CreditNote;
 export function calculate(
   type: typeof DocumentType.DebitNote,
-  input: DebitNoteInput,
+  input: DocumentInput,
   settings: CalculationSettings,
 ): DebitNote;
 export function calculate(
@@ -478,9 +532,23 @@ export function calculate(
     customer = anonymousCustomer();
   }
 
+  if (input.number !== undefined && !isDocumentNumber(input.number)) {
+    issues.push(badNumber('number', input.number));
+  }
+
   const itemsInput = input.items;
   const issueDate = input.issueDate ?? settings.today;
-  const igvRate = Igv.rateOn(settings.issuer.igv ?? Igv.General, issueDate);
+  if (!isIsoDate(issueDate)) issues.push(badDate('issueDate', issueDate));
+  for (const [index, installment] of (input.payment?.installments ?? []).entries()) {
+    if (!isIsoDate(installment.due)) {
+      issues.push(badDate(`payment.installments[${index}].due`, installment.due));
+    }
+  }
+  // A bad date is already reported: use today's rate so it does not add a second, confusing error.
+  const igvRate = Igv.rateOn(
+    settings.issuer.igv ?? Igv.General,
+    isIsoDate(issueDate) ? issueDate : settings.today,
+  );
   const rateFactor = ONE.plus(igvRate.div(HUNDRED));
   let items: Item[];
   if (itemsInput !== undefined) {

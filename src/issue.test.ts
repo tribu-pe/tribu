@@ -86,6 +86,17 @@ describe('sunat.invoice: the Number', () => {
     expect(nextNumber).not.toHaveBeenCalled();
   });
 
+  test.each([0.5, -3, 123_456_789, Number.NaN])(
+    'a Number of %s from nextNumber is a validation error, before anything is signed or sent',
+    async (value) => {
+      const { sunat, fake } = createTestClient({ nextNumber: async () => value });
+      const error = await caught(sunat.invoice({ customer: CUSTOMER, items }));
+      expect(error.kind).toBe('validation');
+      expect(error.issues[0]?.path).toBe('number');
+      expect(fake.submissions).toEqual([]);
+    },
+  );
+
   test('without number or nextNumber it fails clearly, never guessing', async () => {
     const { sunat } = createTestClient();
     const error = await caught(sunat.invoice({ customer: CUSTOMER, items }));

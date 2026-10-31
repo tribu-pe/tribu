@@ -18,6 +18,7 @@ import {
   type SeriesConfig,
 } from './documents/calculate';
 import type { Document } from './documents/document';
+import { badNumber, isDocumentNumber } from './documents/document-id';
 import { qrText } from './documents/qr';
 import type { Ruc } from './documents/ruc';
 import type { RecoveryValue, RoundingValue, SignatureValue } from './options';
@@ -32,7 +33,7 @@ import type {
 } from './results/record';
 import { Status } from './results/status';
 import type { ErrorKind, ErrorRecord, Issue } from './results/tribu-error';
-import { TribuError } from './results/tribu-error';
+import { issue, TribuError } from './results/tribu-error';
 import { defaultRules } from './rules/registry';
 import { validate } from './rules/validate';
 import { deadline as voidedDocumentsDeadline } from './rules/voided-documents/deadline';
@@ -135,10 +136,6 @@ function settingsOf(context: ClientContext): CalculationSettings {
   };
 }
 
-function issue(path: string, code: string, why: string, fix: string, source: string): Issue {
-  return { code, path, why, fix, source };
-}
-
 function validation(issues: readonly Issue[]): TribuError {
   return new TribuError({ kind: 'validation', issues });
 }
@@ -173,7 +170,11 @@ function checkedRules(
 }
 
 async function reserveNumber(context: ClientContext, series: string): Promise<number> {
-  if (context.nextNumber !== undefined) return context.nextNumber(series);
+  if (context.nextNumber !== undefined) {
+    const number = await context.nextNumber(series);
+    if (!isDocumentNumber(number)) throw validation([badNumber('number', number)]);
+    return number;
+  }
   throw validation([
     issue(
       'number',
