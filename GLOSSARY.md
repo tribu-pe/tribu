@@ -106,6 +106,10 @@ _Avoid_: Payment type, payment mode
 One dated payment of a credit Invoice (cuota). All installments add up to the amount pending payment.
 _Avoid_: Quota, payment, fee
 
+**Detracción**:
+The share of the total, IGV included, that the Customer deposits into the Issuer's Banco de la Nación account instead of paying it to the Issuer, for goods and services SUNAT lists (SPOT, catalog 54). The Issuer may use that money only to pay its taxes. It is not a discount: the amount pending payment excludes it, the total does not.
+_Avoid_: Withholding, retention, deduction
+
 **Tax Affectation**:
 How a line relates to IGV: taxed, exempt, unaffected, free of charge or export (afectación del IGV, catalog 07).
 _Avoid_: Tax type, tax status

@@ -6,7 +6,7 @@
 |---|---|
 | [Why Tribu](why-tribu.md) | What Tribu does for you, step by step, compared with doing it yourself |
 | [Examples](examples.md) | Short recipes: Invoices, Receipts, Daily Summaries, notes, voiding, errors, testing |
-| [Documents](documents.md) | Amounts and IGV, Invoices, Receipts, Credit and Debit Notes, Voided Documents |
+| [Documents](documents.md) | Amounts and IGV, Invoices, detracciones, Receipts, Credit and Debit Notes, Voided Documents |
 | [Records and errors](records-and-errors.md) | What to save, statuses, `TribuError`, and what happens when the network fails |
 | [Testing your code](testing.md) | `fakeSunat()`, an in-memory SUNAT for your tests |
 | [Configuration](configuration.md) | Environments, every `tribu.create` option, entry points |

@@ -18,7 +18,7 @@ Crear un cliente de producción con el usuario público de pruebas de SUNAT (`MO
 | Opción | Por defecto | |
 |---|---|---|
 | `env` | `SUNAT_ENV`, luego `'production'` | `'beta'` o `'production'` |
-| `issuer` | obligatorio | `ruc`, `name`, `ubigeo`, `igv` (`Igv.General`) |
+| `issuer` | obligatorio | `ruc`, `name`, `ubigeo`, `igv` (`Igv.General`), `detraccionAccount` (tu cuenta del Banco de la Nación, para [detracciones](documents.md#detracciones)) |
 | `sol` | `SUNAT_SOL_USER`, `SUNAT_SOL_PASSWORD` | Usuario SOL sin el RUC |
 | `certificate` | obligatorio | `{ pfx: Buffer, passphrase }` |
 | `nextNumber` | ninguno | `(series) => Promise<number>`; si no, pasa `number` en cada llamada |

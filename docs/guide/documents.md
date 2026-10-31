@@ -40,6 +40,29 @@ await sunat.invoice({
 
 Without `payment`, the Payment Terms are cash. With `installments`, they are credit, and the Installments must add up to the amount pending payment.
 
+### Detracciones
+
+When an Invoice sells goods or services subject to detracción (SPOT), the Customer deposits part of the total into your Banco de la Nación account instead of paying it to you. Set the account once, and name the good or service with a constant from catalog 54: the constant carries its rate, so you never type a percentage.
+
+```ts
+import tribu, { Detraccion } from 'tribu';
+
+const sunat = tribu.create({
+  issuer: { ruc: '20000000001', name: 'MI EMPRESA SAC', ubigeo: '150101', detraccionAccount: '00-000-123456' },
+  // ...
+});
+
+await sunat.invoice({
+  customer: { ruc: '20123456786', name: 'CLIENTE SAC' },
+  items: [{ description: 'Mantenimiento de equipos', quantity: 1, price: 1180 }],
+  detraccion: Detraccion.Maintenance, // code 020, 12%: S/ 141.60
+});
+```
+
+Tribu adds operation type 1001, the legend "Operación sujeta a detracción", your account, and the code, rate and amount in soles. On credit, the amount pending and the Installments must leave the detracción out (S/ 1,038.40 here). SUNAT doesn't check that, Tribu does.
+
+Tribu doesn't decide whether a sale is subject: that depends on what you sell and on legal exclusions. Only Invoices in soles, and only the codes with one confirmed rate (`Detraccion.all()` lists them). The rates and their sources are in [docs/research/detracciones-2026-10.md](../research/detracciones-2026-10.md).
+
 ### Receipts
 
 A Receipt is sent at once and comes back with its CDR, just like an Invoice. The Customer is optional while the total doesn't exceed S/ 700.00.

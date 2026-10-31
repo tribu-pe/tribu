@@ -78,6 +78,20 @@ await sunat.invoice({
 });
 ```
 
+### Subject to detracción
+
+```ts
+import { Detraccion } from 'tribu';
+
+// tribu.create({ issuer: { ..., detraccionAccount: '00-000-123456' } })
+await sunat.invoice({
+  customer: { ruc: '20123456786', name: 'CLIENTE SAC' },
+  items: [{ description: 'Mantenimiento de equipos', quantity: 1, price: 1180 }],
+  detraccion: Detraccion.Maintenance,
+  payment: { installments: [{ amount: '1038.40', due: '2026-12-31' }] }, // the total less 12%
+});
+```
+
 ## Receipts
 
 ### Anonymous Customer, up to S/ 700
