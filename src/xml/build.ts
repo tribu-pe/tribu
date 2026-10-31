@@ -1,6 +1,6 @@
 import { DocumentType } from '../catalogs/shared';
 import type { Decimal } from '../documents/decimal';
-import type { Document, Item, TaxScheme } from '../documents/document';
+import type { Detraccion, Document, Item, TaxScheme } from '../documents/document';
 import { isAnonymous } from '../documents/predicates';
 import { escapeXml } from './escape';
 
@@ -90,6 +90,52 @@ function paymentTerms(document: Document, currency: string): string[] {
     );
   });
   return terms;
+}
+
+/**
+ * An Invoice subject to detracción (factura-2.0.csv, rules 57, 58, 104–106): operation type 1001
+ * (catalog 51), legend 2006 (catalog 52), the Issuer's account and the code, rate and amount in PEN.
+ * docs/research/detracciones-2026-10.md § 4; ADR 0020.
+ */
+const DETRACCION = {
+  operationType: '1001',
+  legend: { code: '2006', text: 'Operación sujeta a detracción' },
+  // Catalog 59 "Depósito en cuenta": UBL requires a PaymentMeansCode.
+  paymentMeans: '001',
+};
+
+function detraccionOf(document: Document): Detraccion | undefined {
+  return 'detraccion' in document ? document.detraccion : undefined;
+}
+
+function detraccionLegend(document: Document): string[] {
+  if (detraccionOf(document) === undefined) return [];
+  return [tag('cbc:Note', DETRACCION.legend.text, { languageLocaleID: DETRACCION.legend.code })];
+}
+
+function detraccionMeans(document: Document): string[] {
+  const detraccion = detraccionOf(document);
+  if (detraccion === undefined) return [];
+  return [
+    element('cac:PaymentMeans', [
+      tag('cbc:ID', 'Detraccion'),
+      tag('cbc:PaymentMeansCode', DETRACCION.paymentMeans),
+      element('cac:PayeeFinancialAccount', tag('cbc:ID', detraccion.account)),
+    ]),
+  ];
+}
+
+function detraccionTerms(document: Document): string[] {
+  const detraccion = detraccionOf(document);
+  if (detraccion === undefined) return [];
+  return [
+    element('cac:PaymentTerms', [
+      tag('cbc:ID', 'Detraccion'),
+      tag('cbc:PaymentMeansID', detraccion.code.code),
+      tag('cbc:PaymentPercent', detraccion.rate.toString()),
+      money('PEN', 'cbc:Amount', detraccion.amount),
+    ]),
+  ];
 }
 
 function taxSchemeXml(scheme: TaxScheme): string {
@@ -243,11 +289,17 @@ function invoiceXml(document: Document, number: number): string {
       tag('cbc:CustomizationID', '2.0'),
       tag('cbc:ID', idOf(document, number)),
       tag('cbc:IssueDate', document.issueDate),
-      tag('cbc:InvoiceTypeCode', document.type.code, { listID: '0101' }),
+      tag('cbc:InvoiceTypeCode', document.type.code, {
+        listID: detraccionOf(document) === undefined ? '0101' : DETRACCION.operationType,
+      }),
+      ...detraccionLegend(document),
       tag('cbc:DocumentCurrencyCode', currency),
       signatureBlock(document),
       ...parties(document),
+      // UBL 2.1 order: PaymentMeans before PaymentTerms.
+      ...detraccionMeans(document),
       ...paymentTerms(document, currency),
+      ...detraccionTerms(document),
       ...totals(document, currency, 'cac:LegalMonetaryTotal'),
       ...lines,
     ],
