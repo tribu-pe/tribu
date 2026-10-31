@@ -43,7 +43,7 @@
     "deps": "depcruise src",
     "test": "vitest run --project unit",
     "test:watch": "vitest",
-    "test:beta": "vitest run --project beta",
+    "test:beta": "vitest run --project beta --reporter=verbose",
     "catalogs": "node scripts/sunat/generate-return-codes.mjs",
     "catalogs:check": "node scripts/sunat/generate-return-codes.mjs --check",
     "check": "pnpm typecheck && pnpm lint && pnpm deps && pnpm catalogs:check && pnpm test",

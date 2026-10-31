@@ -1,5 +1,5 @@
 {
-  "modifies": "F001-93399003",
+  "modifies": "F001-93402400",
   "reason": {
     "catalog": "10",
     "code": "01",
@@ -16,6 +16,6 @@
       "price": 11.8
     }
   ],
-  "number": 93399004,
+  "number": 93402401,
   "issueDate": "2026-10-30"
 }

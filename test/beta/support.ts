@@ -82,6 +82,8 @@ export function detail(result: Outcome): string {
 export function expectAccepted(result: Outcome): void {
   expect(result.record?.status?.code, detail(result)).toBe(Status.Accepted.code);
   expect(result.record?.cdr?.observations, detail(result)).toEqual([]);
+  // Shows SUNAT's own words under each test, so a run proves something to whoever watches it.
+  process.stdout.write(`SUNAT ${result.record?.cdr?.code}: ${result.record?.cdr?.description}\n`);
 }
 
 /** Keeps an accepted document as a golden fixture: the input and the XML SUNAT accepted, unsigned. */
