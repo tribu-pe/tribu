@@ -10,7 +10,7 @@ export const endpoints = {
     consult: undefined,
   },
   production: {
-    // Production billService: confirmed from SUNAT's "Servicios Web disponibles" list.
+    // SUNAT's "Servicios Web disponibles" list (docs/research/sunat-facts-2026-10.md § Web service endpoints).
     bill: 'https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService',
     consult: 'https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService',
   },

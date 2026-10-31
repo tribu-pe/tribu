@@ -76,6 +76,17 @@ Validation workbook, sheet Factura2_0, rules 174–177. All are ERRORs since 202
 - Beta: SUNAT says no certificate registered with it is needed. Endpoint `https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService`, user `[RUC]MODDATOS`, password `MODDATOS`. Beta only covers Invoices, Receipts and notes. A self-signed certificate generated at test time works: beta accepted every document signed with one (Milestone 0, 2026-10-30: [milestone-0-results.md](milestone-0-results.md), question 1).
 - Production: the certificate must come from a provider in INDECOPI's ROPS registry (IOFE) **and be registered with SUNAT through SOL** (otherwise ERROR 2325; 2326 if deregistered). SUNAT offers a free Certificado Digital Tributario to eligible taxpayers until 2027-12-31 (R.S. 038-2020).
 
+## Web service endpoints
+
+Source: SUNAT, "01. Servicios Web disponibles" (orientacion.sunat.gob.pe/01-servicios-web-disponibles) and the list published on the CPE microsite (cpe.sunat.gob.pe, "Descarga aquí los Servicios WEB Disponibles", May 2026). Both checked on 2026-10-31.
+
+| Service | Beta | Production |
+|---|---|---|
+| Invoices, Receipts, notes, Daily Summaries, Voided Documents | `https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService` | `https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService` |
+| CDR and status lookup | none | `https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService` |
+
+The production WSDL (`…/ol-ti-itcpfegem/billService?wsdl`, fetched 2026-10-31) answers HTTP 200, names `https://e-factura.sunat.gob.pe:443/ol-ti-itcpfegem/billService` as its address, and offers `sendBill`, `sendSummary`, `sendPack` and `getStatus`. Dispatch guides and retentions/perceptions use other services, outside v0.1.
+
 ## Record retention
 
 Keep XML and CDR at least **5 years**, or for the tax prescription period if that is longer (Código Tributario art. 87.7). SEE-Del contribuyente issuers must keep them themselves.

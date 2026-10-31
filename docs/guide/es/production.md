@@ -27,7 +27,6 @@ Nunca pongas tu Clave SOL, tu `.pfx` ni su contraseña en tu código, tu reposit
 
 Beta no pudo responder estas preguntas ([resultados del Milestone 0](../../research/milestone-0-results.md), en inglés). Si ves que pasa alguna, tu reporte vale especialmente.
 
-- **La dirección de producción.** Tribu envía a `https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService`. El repositorio todavía no cita una fuente oficial para ella.
 - **Rechazos que llegan como SOAP fault.** ¿SUNAT da el número por usado? Tribu supone que sí.
 - **Enviar dos veces el mismo comprobante.** Beta lo vuelve a aceptar. *No está confirmado* si producción responde con un código de duplicado como 1033.
 - **Recuperar la respuesta perdida de una boleta.** Tribu se detiene y te deja decidir.

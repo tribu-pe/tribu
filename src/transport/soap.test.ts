@@ -54,5 +54,9 @@ describe('endpoints', () => {
     expect(endpoints.beta.consult).toBeUndefined();
   });
 
-  test.todo("production billService, confirmed from SUNAT's 'Servicios Web disponibles' list");
+  test("production billService (SUNAT's 'Servicios Web disponibles', docs/research § Web service endpoints)", () => {
+    expect(endpoints.production.bill).toBe(
+      'https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService',
+    );
+  });
 });
