@@ -44,7 +44,13 @@ export function openCertificate(pfx: Buffer, passphrase: string): OpenCertificat
   const plain = store.getBags({ bagType: KEY_BAG })[KEY_BAG];
   const certificates = store.getBags({ bagType: CERT_BAG })[CERT_BAG];
   const key = shrouded?.[0]?.key ?? plain?.[0]?.key;
-  const certificate = certificates?.[0]?.cert;
+  // A .pfx may list the CA chain too, in any order: the right certificate is the one whose
+  // public key belongs to the private key.
+  const modulus = (key as forge.pki.rsa.PrivateKey | undefined)?.n;
+  const certificate = certificates?.find((bag) => {
+    const publicKey = bag.cert?.publicKey as forge.pki.rsa.PublicKey | undefined;
+    return modulus !== undefined && publicKey?.n.equals(modulus) === true;
+  })?.cert;
 
   if (key === undefined || certificate === undefined) {
     throw config('The .pfx holds no private key and certificate pair.');

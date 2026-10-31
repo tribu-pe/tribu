@@ -15,5 +15,7 @@ export default defineConfig({
   platform: 'node',
   target: 'node22',
   dts: true,
+  // package.json "exports" points to .js; the package is "type": "module", so .js is ESM.
+  fixedExtension: false,
   clean: true,
 });

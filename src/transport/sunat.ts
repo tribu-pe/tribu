@@ -54,7 +54,10 @@ function neverSent(error: unknown): boolean {
 function faultOf(xml: string, status: number): TransportFailure {
   const faultcode = localName(xml, 'faultcode')?.trim();
   const faultstring = localName(xml, 'faultstring')?.trim();
-  const code = /(\d{4})/.exec(faultcode ?? '')?.[1] ?? /(\d{4})/.exec(faultstring ?? '')?.[1];
+  // faultcode is `soap-env:Client.<code>`. In faultstring only a leading code counts: a date or
+  // a timeout in the text must never read as a return code, or it could mark a document Rejected.
+  const code =
+    /\b(\d{4})\b/.exec(faultcode ?? '')?.[1] ?? /^\s*(\d{4})\b/.exec(faultstring ?? '')?.[1];
   const message = faultstring ?? faultcode ?? `SUNAT answered HTTP ${status}`;
   return new TransportFailure(message, code === undefined ? { sent: true } : { sent: true, code });
 }

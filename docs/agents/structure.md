@@ -35,9 +35,11 @@ poc/                   Milestone 0 only: throwaway, never published
 docs/
   adr/                 decisions (ADR format: short, the "why")
   agents/              these agent guides
+  guide/               user guide and examples; guide/es/ is its Spanish copy
   plan/                scope and milestones
   research/            verified SUNAT facts with sources
-GLOSSARY.md  AGENTS.md  README.md  README.es.md  CONTRIBUTING.md
+GLOSSARY.md  AGENTS.md  README.md  README.es.md  CONTRIBUTING.md  CONTRIBUTING.es.md
+.github/ISSUE_TEMPLATE/  bug, production report and feature templates
 ```
 
 ## Layers and the dependency rule

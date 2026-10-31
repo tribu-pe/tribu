@@ -15,6 +15,13 @@ describe('Igv', () => {
     expect(Igv.rateOn(Igv.Hospitality, '2027-03-01').toFixed(2)).toBe('15.00');
   });
 
+  test('the dated lines change on the exact day, and the last one ends on 2027-12-31', () => {
+    expect(Igv.rateOn(Igv.Hospitality, '2026-12-31').toFixed(2)).toBe('10.50');
+    expect(Igv.rateOn(Igv.Hospitality, '2027-01-01').toFixed(2)).toBe('15.00');
+    expect(Igv.rateOn(Igv.Hospitality, '2027-12-31').toFixed(2)).toBe('15.00');
+    expect(() => Igv.rateOn(Igv.Hospitality, '2028-01-01')).toThrow(TribuError);
+  });
+
   test('has no hospitality rate after 2027 and says so instead of guessing', () => {
     try {
       Igv.rateOn(Igv.Hospitality, '2028-01-05');

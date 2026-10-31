@@ -129,6 +129,21 @@ describe('SUNAT answers', () => {
       .catch((reason: unknown) => reason);
     expect((error as TransportFailure).code).toBe('0102');
   });
+
+  test('digits inside the faultstring text are not a return code', async () => {
+    stubFetch(
+      soapResponse(
+        '<soapenv:Fault><faultcode>soap:Server</faultcode><faultstring>Error at 2026-10-31T10:00:00, timed out after 30000 ms</faultstring></soapenv:Fault>',
+      ),
+      500,
+    );
+    const error = await transport()
+      .sendBill({ fileName: '20000000001-01-F001-1', zip: new Uint8Array() })
+      .catch((reason: unknown) => reason);
+    expect(error).toBeInstanceOf(TransportFailure);
+    expect((error as TransportFailure).code).toBeUndefined();
+    expect((error as TransportFailure).sent).toBe(true);
+  });
 });
 
 describe('network failures and retry safety (ADR 0015)', () => {

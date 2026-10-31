@@ -171,6 +171,91 @@ describe('calculate: IGV Regime', () => {
   });
 });
 
+describe('calculate: amounts SUNAT rejects (factura-2.0.csv ERR 2024, 2025, 2367, 2369, 2370)', () => {
+  const codesOf = (input: Parameters<typeof anInvoice>[0]): string[] => {
+    try {
+      anInvoice(input);
+    } catch (error) {
+      return (error as TribuError).issues.map((found) => found.code);
+    }
+    return [];
+  };
+  const line = (fields: object) => ({
+    items: [{ description: 'Teclado', quantity: 1, ...fields }],
+  });
+
+  test('a zero quantity is ERR 2024', () => {
+    expect(codesOf(line({ quantity: 0, price: 10 }))).toEqual(['2024']);
+  });
+
+  test.each([-1, '-0.5', '0.12345678901'])('a quantity of %s is ERR 2025', (quantity) => {
+    expect(codesOf(line({ quantity, price: 10 }))).toEqual(['2025']);
+  });
+
+  test('a price of zero is ERR 2367, and a value of zero is ERR 2369', () => {
+    expect(codesOf(line({ price: 0 }))).toEqual(['2367']);
+    expect(codesOf(line({ value: 0 }))).toEqual(['2369']);
+  });
+
+  test('a negative price is rejected', () => {
+    expect(codesOf(line({ price: -5 }))).toEqual(['2367']);
+  });
+
+  test('a line that rounds to a value of 0.00 is ERR 2370', () => {
+    expect(codesOf(line({ price: 0.001 }))).toEqual(['2370']);
+  });
+
+  test('a JavaScript float price with many decimals still passes (it is rounded, not rejected)', () => {
+    expect(codesOf(line({ price: 0.1 + 0.2 }))).toEqual([]);
+  });
+
+  test('a quantity with 10 decimals and the smallest sellable line pass', () => {
+    expect(codesOf(line({ quantity: '0.1234567890', price: 100 }))).toEqual([]);
+    expect(codesOf(line({ price: 0.01 }))).toEqual([]);
+  });
+
+  test.each([0.5, -1, 123_456_789])('a Number of %s is rejected', (number) => {
+    expect(codesOf({ number })).toEqual(['1001']);
+  });
+
+  test('every bad line is reported, not just the first', () => {
+    const input = {
+      items: [
+        { description: 'A', quantity: 0, price: 10 },
+        { description: 'B', quantity: 1, price: 0 },
+      ],
+    };
+    expect(codesOf(input)).toEqual(['2024', '2367']);
+  });
+});
+
+describe('calculate: dates', () => {
+  const pathsOf = (run: () => unknown): string[] => {
+    try {
+      run();
+    } catch (error) {
+      return (error as TribuError).issues.map((found) => found.path);
+    }
+    return [];
+  };
+
+  test.each(['31/10/2026', '2026-10-5', '2026-02-30', '2026-13-01', ''])(
+    'an issue date of "%s" is a validation error, not a date that passes every deadline Rule',
+    (issueDate) => {
+      expect(pathsOf(() => anInvoice({ issueDate }))).toEqual(['issueDate']);
+    },
+  );
+
+  test('an installment due date that is not a date is a validation error', () => {
+    const payment = { installments: [{ amount: 236, due: '30-11-2026' }] };
+    expect(pathsOf(() => anInvoice({ payment }))).toEqual(['payment.installments[0].due']);
+  });
+
+  test('a real date, including 29 February of a leap year, passes', () => {
+    expect(anInvoice({ issueDate: '2024-02-29' }).issueDate).toBe('2024-02-29');
+  });
+});
+
 describe('calculate: defaults and where each value came from', () => {
   test('unit and affectation default to goods and taxed', () => {
     const item = firstItem(anInvoice());

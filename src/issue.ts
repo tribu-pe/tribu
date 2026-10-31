@@ -18,6 +18,7 @@ import {
   type SeriesConfig,
 } from './documents/calculate';
 import type { Document } from './documents/document';
+import { badNumber, isDocumentNumber } from './documents/document-id';
 import { qrText } from './documents/qr';
 import type { Ruc } from './documents/ruc';
 import type { RecoveryValue, RoundingValue, SignatureValue } from './options';
@@ -32,7 +33,7 @@ import type {
 } from './results/record';
 import { Status } from './results/status';
 import type { ErrorKind, ErrorRecord, Issue } from './results/tribu-error';
-import { TribuError } from './results/tribu-error';
+import { issue, TribuError } from './results/tribu-error';
 import { defaultRules } from './rules/registry';
 import { validate } from './rules/validate';
 import { deadline as voidedDocumentsDeadline } from './rules/voided-documents/deadline';
@@ -135,10 +136,6 @@ function settingsOf(context: ClientContext): CalculationSettings {
   };
 }
 
-function issue(path: string, code: string, why: string, fix: string, source: string): Issue {
-  return { code, path, why, fix, source };
-}
-
 function validation(issues: readonly Issue[]): TribuError {
   return new TribuError({ kind: 'validation', issues });
 }
@@ -173,7 +170,11 @@ function checkedRules(
 }
 
 async function reserveNumber(context: ClientContext, series: string): Promise<number> {
-  if (context.nextNumber !== undefined) return context.nextNumber(series);
+  if (context.nextNumber !== undefined) {
+    const number = await context.nextNumber(series);
+    if (!isDocumentNumber(number)) throw validation([badNumber('number', number)]);
+    return number;
+  }
   throw validation([
     issue(
       'number',
@@ -425,11 +426,7 @@ async function issueDocument(
   }
 
   const fileName = documentFileName(context.issuer.ruc.value, numbered);
-  const submission: Submission = {
-    fileName,
-    zip: zipDocument(fileName, signed),
-    username: `${context.issuer.ruc.value}${context.sol.user}`,
-  };
+  const submission = submissionOf(context, fileName, signed);
   const lookup: CdrLookup = {
     ruc: context.issuer.ruc.value,
     documentType: numbered.type.code,
@@ -537,6 +534,36 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+/** What SUNAT receives: the XML zipped under its file name, and who sends it. */
+function submissionOf(context: ClientContext, fileName: string, xml: string): Submission {
+  return {
+    fileName,
+    zip: zipDocument(fileName, xml),
+    username: `${context.issuer.ruc.value}${context.sol.user}`,
+  };
+}
+
+/** Sends a Daily Summary or Voided Documents file and returns its Ticket. */
+async function sendReport(
+  context: ClientContext,
+  fileName: string,
+  record: SubmissionRecord,
+  earlier?: readonly SubmissionRecord[],
+): Promise<string> {
+  try {
+    return (await context.transport.sendSummary(submissionOf(context, fileName, record.xml)))
+      .ticket;
+  } catch (error) {
+    throw new TribuError({
+      kind: 'unconfirmed',
+      issues: [transportIssue(errorMessage(error))],
+      record: { ...record, status: Status.Unconfirmed },
+      // The earlier groups already have a Ticket: never lose them (ADR 0008).
+      ...(earlier === undefined ? {} : { context: { records: earlier } }),
+    });
+  }
+}
+
 export async function dailySummary(
   context: ClientContext,
   input: DailySummaryInput,
@@ -573,22 +600,7 @@ export async function dailySummary(
     xml: signed,
     members: [...issued, ...voided],
   };
-  let ticket: string;
-  try {
-    ticket = (
-      await context.transport.sendSummary({
-        fileName,
-        zip: zipDocument(fileName, signed),
-        username: `${context.issuer.ruc.value}${context.sol.user}`,
-      })
-    ).ticket;
-  } catch (error) {
-    throw new TribuError({
-      kind: 'unconfirmed',
-      issues: [transportIssue(errorMessage(error))],
-      record: { ...record, status: Status.Unconfirmed },
-    });
-  }
+  const ticket = await sendReport(context, fileName, record);
   input.onTicket?.(ticket);
   return { record: { ...record, ticket }, warnings };
 }
@@ -655,24 +667,12 @@ export async function voidDocuments(
       xml: signed,
       members: group,
     };
-    let ticket: string;
-    try {
-      ticket = (
-        await context.transport.sendSummary({
-          fileName,
-          zip: zipDocument(fileName, signed),
-          username: `${context.issuer.ruc.value}${context.sol.user}`,
-        })
-      ).ticket;
-    } catch (error) {
-      throw new TribuError({
-        kind: 'unconfirmed',
-        issues: [transportIssue(errorMessage(error))],
-        record: { ...record, status: Status.Unconfirmed },
-        // The earlier groups already have a Ticket: never lose them (ADR 0008).
-        context: { records: results.map((result) => result.record) },
-      });
-    }
+    const ticket = await sendReport(
+      context,
+      fileName,
+      record,
+      results.map((result) => result.record),
+    );
     results.push({ record: { ...record, ticket }, warnings: [] });
   }
   return results;
@@ -794,11 +794,7 @@ export async function retryIssue(
     context.issuer.ruc.value,
     document as Document & { number: number },
   );
-  const submission: Submission = {
-    fileName,
-    zip: zipDocument(fileName, xml),
-    username: `${context.issuer.ruc.value}${context.sol.user}`,
-  };
+  const submission = submissionOf(context, fileName, xml);
   const failure = new TransportFailure('manual retry', { sent: true });
   const lookup: CdrLookup = {
     ruc: context.issuer.ruc.value,

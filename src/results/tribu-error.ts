@@ -9,6 +9,10 @@ export interface Issue {
   readonly source: string;
 }
 
+export function issue(path: string, code: string, why: string, fix: string, source: string): Issue {
+  return { code, path, why, fix, source };
+}
+
 /**
  * The minimum a Record offers, so an error never depends on the document model.
  * `src/results/record.ts` narrows it for callers that hold a full Record.

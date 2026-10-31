@@ -39,7 +39,7 @@ import type {
   TribuRecord,
 } from './results/record';
 import type { Issue } from './results/tribu-error';
-import { TribuError } from './results/tribu-error';
+import { issue, TribuError } from './results/tribu-error';
 import { type OpenCertificate, openCertificate } from './signing/certificate';
 import type { SunatTransport } from './transport/send';
 import { sunatTransport } from './transport/sunat';
@@ -138,10 +138,6 @@ export interface Client {
     record: Parameters<typeof retryIssue>[1],
     options?: RetryOptions,
   ): Promise<IssueResult<DocumentRecord>>;
-}
-
-function issue(path: string, code: string, why: string, fix: string, source: string): Issue {
-  return { code, path, why, fix, source };
 }
 
 function isRounding(value: unknown): value is RoundingValue {

@@ -1,3 +1,5 @@
+import { escapeXml } from '../xml/escape';
+
 const SOAP = 'http://schemas.xmlsoap.org/soap/envelope/';
 const SERVICE = 'http://service.sunat.gob.pe';
 const WSSE = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
@@ -13,15 +15,6 @@ export const endpoints = {
     consult: 'https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService',
   },
 } as const;
-
-function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
 
 function envelope(
   auth: {
