@@ -4,7 +4,7 @@ Tribu is an open-source TypeScript SDK for issuing Peruvian electronic payment d
 
 ## Status
 
-**v0.1 is implemented against its specification; `pnpm check` and `pnpm build` pass.** The test suite written before the code lives in `src/` and is the contract. The next step is Milestone 0 ([docs/plan/milestone-0.md](docs/plan/milestone-0.md)): a throwaway experiment in `poc/` that signs and sends documents to SUNAT beta, confirms the open `test.todo` questions and produces the golden fixtures. Then comes the v0.1 release ([docs/plan/v0.1-scope.md](docs/plan/v0.1-scope.md)).
+**v0.1 is implemented and Milestone 0 is done:** every document type and report is accepted by SUNAT beta ([docs/research/milestone-0-results.md](docs/research/milestone-0-results.md)). `pnpm check` and `pnpm build` pass; `pnpm test:beta` passes against beta. The next step is the v0.1 release ([docs/plan/v0.1-scope.md](docs/plan/v0.1-scope.md)).
 
 Tooling is configured. **Never invent commands:** these are the only ones.
 
@@ -43,8 +43,9 @@ The rules in `.dependency-cruiser.cjs` and `biome.json` enforce where each packa
 | [docs/agents/structure.md](docs/agents/structure.md) | Repository layout, layers, the pipeline, and where each kind of change goes |
 | [docs/agents/code-style.md](docs/agents/code-style.md) | How to write code here, with examples and a pre-commit checklist |
 | [docs/conventions.md](docs/conventions.md) | The full conventions; they win if anything else disagrees |
-| [docs/adr/](docs/adr) | Why things are the way they are (0001–0018). Read the relevant ADR before changing a design |
+| [docs/adr/](docs/adr) | Why things are the way they are (0001–0019). Read the relevant ADR before changing a design |
 | [docs/research/sunat-facts-2026-10.md](docs/research/sunat-facts-2026-10.md) | Verified SUNAT facts, with sources |
+| [docs/research/milestone-0-results.md](docs/research/milestone-0-results.md) | What SUNAT beta answered, with the tests that prove it |
 | [sources/sunat/](sources/sunat) | SUNAT's validation workbook as CSV (rules, return codes, catalogs). Search here before anything else; cite it as `sources/sunat/reglas-validacion-2026-08-26/<file>.csv` |
 
 ## Rules for agents

@@ -1,0 +1,33 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Clavo",
+        "quantity": 1,
+        "value": 0.125
+      }
+    ],
+    "rounding": {
+      "rounding": "half-even"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "general",
+      "name": "Régimen general",
+      "source": "Ley 32387"
+    }
+  },
+  "totals": {
+    "taxed": "0.12",
+    "exempt": "0",
+    "unaffected": "0",
+    "igv": "0.02",
+    "value": "0.12",
+    "payable": "0.14"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93402381, ha sido aceptada",
+    "observations": []
+  }
+}

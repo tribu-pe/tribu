@@ -50,10 +50,24 @@ function money(currency: string, name: string, value: Decimal): string {
   return tag(name, value.toFixed(2), { currencyID: currency });
 }
 
-function party(identityCode: string, number: string, name: string): string {
+/**
+ * How a Receipt names an Anonymous Customer. SUNAT prescribes no value, only 3 to 1500
+ * characters (boleta-2.0.csv, ERR 2022): beta rejected "-" in Milestone 0.
+ */
+const ANONYMOUS_NAME = 'CLIENTES VARIOS';
+
+/** The Issuer's main establishment; another code is checked against its RUC record. */
+const MAIN_ESTABLISHMENT = '0000';
+
+function party(identityCode: string, number: string, name: string, address?: string): string {
   return element('cac:Party', [
     element('cac:PartyIdentification', tag('cbc:ID', number, { schemeID: identityCode })),
-    element('cac:PartyLegalEntity', tag('cbc:RegistrationName', name)),
+    element('cac:PartyLegalEntity', [
+      tag('cbc:RegistrationName', name),
+      ...(address === undefined
+        ? []
+        : [element('cac:RegistrationAddress', tag('cbc:AddressTypeCode', address))]),
+    ]),
   ]);
 }
 
@@ -103,9 +117,10 @@ function taxSubtotal(currency: string, scheme: TaxScheme, taxable: Decimal, tax:
 }
 
 function itemCategory(item: Item, rate: string): string {
+  // UBL 2.1 TaxCategoryType order: Percent before TaxExemptionReasonCode (beta answered 0306).
   return element('cac:TaxCategory', [
-    tag('cbc:TaxExemptionReasonCode', item.affectation.code),
     tag('cbc:Percent', rate),
+    tag('cbc:TaxExemptionReasonCode', item.affectation.code),
     taxSchemeXml(item.taxScheme),
   ]);
 }
@@ -177,10 +192,11 @@ function totals(document: Document, currency: string, monetaryTotal: string): st
 function parties(document: Document): string[] {
   const supplier = element(
     'cac:AccountingSupplierParty',
-    party('6', document.issuer.ruc.value, document.issuer.name),
+    // factura-2.0.csv: the establishment code is mandatory (ERR 3030).
+    party('6', document.issuer.ruc.value, document.issuer.name, MAIN_ESTABLISHMENT),
   );
   const customer = isAnonymous(document.customer)
-    ? element('cac:AccountingCustomerParty', party('-', '-', '-'))
+    ? element('cac:AccountingCustomerParty', party('-', '-', ANONYMOUS_NAME))
     : element(
         'cac:AccountingCustomerParty',
         party(
@@ -192,11 +208,21 @@ function parties(document: Document): string[] {
   return [supplier, customer];
 }
 
+/** The Id of ds:Signature (ERR 2085), referenced from cac:Signature. */
+export const SIGNATURE_ID = 'SignTribu';
+
+/** firma.csv: cbc:ID (ERR 2076), the issuer RUC (ERR 2078), its name (ERR 2081), the URI (ERR 2083). */
 function signatureBlock(document: Document): string {
   return element('cac:Signature', [
+    tag('cbc:ID', SIGNATURE_ID),
     element('cac:SignatoryParty', [
       element('cac:PartyIdentification', tag('cbc:ID', document.issuer.ruc.value)),
+      element('cac:PartyName', tag('cbc:Name', document.issuer.name)),
     ]),
+    element(
+      'cac:DigitalSignatureAttachment',
+      element('cac:ExternalReference', tag('cbc:URI', `#${SIGNATURE_ID}`)),
+    ),
   ]);
 }
 
@@ -274,7 +300,8 @@ function noteXml(document: Document, number: number): string {
       ),
       signatureBlock(document),
       ...parties(document),
-      ...paymentTerms(document, currency),
+      // nota-credito-2.0.csv: PaymentTerms only for Reason 13, and only "Credito" (ERR 3257);
+      // beta rejected "Contado" on a note (ERR 3246). nota-debito-2.0.csv has no PaymentTerms.
       ...totals(
         document,
         currency,

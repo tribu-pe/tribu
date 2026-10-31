@@ -1,0 +1,128 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Galleta 1",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 2",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 3",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 4",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 5",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 6",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 7",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 8",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 9",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 10",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 11",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 12",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 13",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 14",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 15",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 16",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 17",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 18",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 19",
+        "quantity": 1,
+        "price": 0.35
+      },
+      {
+        "description": "Galleta 20",
+        "quantity": 1,
+        "price": 0.35
+      }
+    ],
+    "rounding": {
+      "rounding": "half-up"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "general",
+      "name": "Régimen general",
+      "source": "Ley 32387"
+    }
+  },
+  "totals": {
+    "taxed": "6",
+    "exempt": "0",
+    "unaffected": "0",
+    "igv": "1",
+    "value": "6",
+    "payable": "7"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93402379, ha sido aceptada",
+    "observations": []
+  }
+}

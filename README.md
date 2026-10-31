@@ -14,7 +14,7 @@ Tribu calculates the amounts, validates the Document against SUNAT's rules befor
 [Leer en español](README.es.md)
 
 > [!WARNING]
-> **Not released yet.** v0.1 is implemented, but it has not yet been sent to SUNAT's beta environment (Milestone 0). Don't use it for real Documents until a release is published.
+> **Not released yet.** v0.1 is implemented and SUNAT's beta environment accepts every document type it issues ([Milestone 0 results](docs/research/milestone-0-results.md)), but it has not been used in production. Don't use it for real Documents until a release is published.
 
 > [!IMPORTANT]
 > **v0.1 does not support detracciones.** If your invoices are subject to them, don't use v0.1 for those invoices yet. Perceptions, retentions, advance payments, exports, free operations, ISC and ICBPER are also out of scope (see [What v0.1 covers](#what-v01-covers)).
@@ -247,7 +247,7 @@ fake.submissions; // what was sent
 | `nextNumber` | none | `(series) => Promise<number>`; otherwise pass `number` on each call |
 | `series` | `F001`, `B001`, notes `FC01`/`BC01`, `FD01`/`BD01` | A note's series starts with the letter of the Document it modifies |
 | `rounding` | `Rounding.HalfUp` | Or `Rounding.HalfEven` |
-| `signature` | `Signature.RsaSha256` | Or `Signature.RsaSha1`. Which ones SUNAT accepts is confirmed in Milestone 0 |
+| `signature` | `Signature.RsaSha256` | Or `Signature.RsaSha1`. SUNAT beta accepts both |
 | `recovery` | `Recovery.Confirm` | One value, or one per document type |
 | `timeout` | `30000` ms | |
 | `retry` | `{ attempts: 3, delay: 1000 }` | Only for failures before sending |

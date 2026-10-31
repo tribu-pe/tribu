@@ -1,0 +1,21 @@
+{
+  "modifies": "F001-93402400",
+  "reason": {
+    "catalog": "10",
+    "code": "01",
+    "name": "Intereses por mora"
+  },
+  "customer": {
+    "ruc": "20123456786",
+    "name": "CLIENTE SAC"
+  },
+  "items": [
+    {
+      "description": "Intereses por mora",
+      "quantity": 1,
+      "price": 11.8
+    }
+  ],
+  "number": 93402401,
+  "issueDate": "2026-10-30"
+}

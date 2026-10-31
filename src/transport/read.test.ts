@@ -2,12 +2,26 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import { ResponseCode } from '../catalogs/index';
 import { readCdr } from './read';
+import { unzipXml } from './zip';
 
 const fixture = (name: string) =>
   readFileSync(new URL(`../../fixtures/sunat/${name}`, import.meta.url), 'utf8');
 
 // Manual del Programador, Annex 1: cbc:ResponseCode is "0" when accepted, otherwise the error code.
 describe('readCdr', () => {
+  // A real CDR from SUNAT beta (Milestone 0): root ar:ApplicationResponse, signed by SUNAT.
+  test('an accepted Invoice from SUNAT beta', () => {
+    const zip = readFileSync(
+      new URL('../../fixtures/sunat/beta/invoice-accepted.zip', import.meta.url),
+    );
+    const cdr = readCdr(unzipXml(zip));
+    expect(cdr.code).toBe('0');
+    expect(cdr.response).toBe(ResponseCode.Accepted);
+    expect(cdr.documentId).toMatch(/^F001-\d+$/);
+    expect(cdr.description).toMatch(/ha sido aceptada$/);
+    expect(cdr.observations).toEqual([]);
+  });
+
   test('an accepted CDR with observations', () => {
     const cdr = readCdr(fixture('cdr-accepted-with-observations.xml'));
     expect(cdr.documentId).toBe('FA01-981');
@@ -37,5 +51,5 @@ describe('readCdr', () => {
     expect(() => readCdr('<not-a-cdr')).toThrow();
   });
 
-  test.todo('SOAP faults carry exceptions 0100–1999: format to be confirmed in Milestone 0');
+  // SOAP faults are read in transport/sunat.ts; beta confirmed soap-env:Client.<code> (sunat.test.ts).
 });

@@ -152,5 +152,6 @@ describe('a failure after sending: SUNAT may already have it', () => {
     expect(fake.attempts['B001-5']).toBe(2);
   });
 
-  test.todo('how SUNAT answers a duplicate re-send (1033, 2109, 2223): Milestone 0, question 6');
+  // Milestone 0, question 6: beta answered an identical re-send with a second acceptance, no
+  // duplicate code (test/beta/questions.test.ts). Production is unverified, so Confirm stays the default.
 });

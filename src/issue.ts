@@ -193,10 +193,11 @@ function delayFor(delay: number | ((attempt: number) => number), attempt: number
   return typeof delay === 'function' ? delay(attempt) : delay * 2 ** (attempt - 1);
 }
 
+/** An unknown error may have happened after SUNAT got the file: assume it did (ADR 0015). */
 function toFailure(error: unknown): TransportFailure {
   if (error instanceof TransportFailure) return error;
   return new TransportFailure(error instanceof Error ? error.message : String(error), {
-    sent: false,
+    sent: true,
   });
 }
 
@@ -244,6 +245,41 @@ function outcomeOf(cdr: Cdr): Outcome {
   return { status, cdr };
 }
 
+/**
+ * A SOAP fault carries a return code like a CDR does, and its class decides (ADR 0014): beta
+ * rejects content (2000–3999) by fault too. Only exceptions (0100–1999) leave the Record Issued.
+ */
+function faultOutcome(code: string, message: string): Outcome {
+  if (Status.fromResponse(code) === Status.Rejected) {
+    return {
+      status: Status.Rejected,
+      kind: 'rejected',
+      issues: [
+        issue(
+          'cdr',
+          code,
+          message,
+          'Correct the document and issue a new one, with a new Number.',
+          'ADR 0014',
+        ),
+      ],
+    };
+  }
+  return {
+    status: Status.Issued,
+    kind: 'exception',
+    issues: [
+      issue(
+        'cdr',
+        code,
+        message,
+        'SUNAT did not evaluate the document; the Record stays Issued.',
+        'ADR 0014',
+      ),
+    ],
+  };
+}
+
 function unconfirmed(kind: DocumentKind, failure: TransportFailure): Outcome {
   const receipt = kind === 'receipt';
   return {
@@ -271,7 +307,9 @@ async function resend(
   try {
     return outcomeOf(await submitOnce(context, submission));
   } catch (error) {
-    return unconfirmed(kind, toFailure(error));
+    const failure = toFailure(error);
+    if (failure.code !== undefined) return faultOutcome(failure.code, failure.message);
+    return unconfirmed(kind, failure);
   }
 }
 
@@ -316,21 +354,7 @@ async function deliver(
       return outcomeOf(await submitOnce(context, submission));
     } catch (error) {
       const failure = toFailure(error);
-      if (failure.code !== undefined) {
-        return {
-          status: Status.Issued,
-          kind: 'exception',
-          issues: [
-            issue(
-              'cdr',
-              failure.code,
-              failure.message,
-              'SUNAT did not evaluate the document; the Record stays Issued.',
-              'ADR 0014',
-            ),
-          ],
-        };
-      }
+      if (failure.code !== undefined) return faultOutcome(failure.code, failure.message);
       if (!failure.sent) {
         if (attempt < attempts) {
           await sleep(delayFor(context.retry.delay, attempt));
@@ -740,7 +764,12 @@ export async function waitFor(
         status:
           record.id.startsWith('RA-') || member.condition === '3' ? Status.Voided : Status.Accepted,
       }));
-      return { record: { ...record, status: Status.Accepted, members: documents }, documents };
+      // The Ticket's CDR is part of what the Issuer must keep (ADR 0008).
+      const cdr = answer.cdr === undefined ? {} : { cdr: answer.cdr };
+      return {
+        record: { ...record, ...cdr, status: Status.Accepted, members: documents },
+        documents,
+      };
     }
     await sleep(interval);
   }

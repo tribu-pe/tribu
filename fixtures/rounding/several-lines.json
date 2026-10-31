@@ -1,0 +1,43 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Cuaderno",
+        "quantity": 3,
+        "price": 19.9
+      },
+      {
+        "description": "Borrador",
+        "quantity": 7,
+        "price": 4.5
+      },
+      {
+        "description": "Clip",
+        "quantity": 11,
+        "price": 0.99
+      }
+    ],
+    "rounding": {
+      "rounding": "half-up"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "general",
+      "name": "Régimen general",
+      "source": "Ley 32387"
+    }
+  },
+  "totals": {
+    "taxed": "86.51",
+    "exempt": "0",
+    "unaffected": "0",
+    "igv": "15.58",
+    "value": "86.51",
+    "payable": "102.09"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93402371, ha sido aceptada",
+    "observations": []
+  }
+}

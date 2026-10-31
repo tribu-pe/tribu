@@ -1,0 +1,15 @@
+{
+  "customer": {
+    "dni": "12345678",
+    "name": "Juan Pérez"
+  },
+  "items": [
+    {
+      "description": "Mouse",
+      "quantity": 1,
+      "price": 50
+    }
+  ],
+  "number": 93402390,
+  "issueDate": "2026-10-30"
+}

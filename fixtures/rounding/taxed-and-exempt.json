@@ -1,0 +1,48 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Teclado",
+        "quantity": 1,
+        "price": 118
+      },
+      {
+        "description": "Libro",
+        "quantity": 1,
+        "value": 50,
+        "affectation": {
+          "catalog": "07",
+          "code": "20",
+          "name": "Exonerado - Operación Onerosa",
+          "taxScheme": {
+            "code": "9997",
+            "name": "EXO",
+            "international": "VAT"
+          }
+        }
+      }
+    ],
+    "rounding": {
+      "rounding": "half-up"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "general",
+      "name": "Régimen general",
+      "source": "Ley 32387"
+    }
+  },
+  "totals": {
+    "taxed": "100",
+    "exempt": "50",
+    "unaffected": "0",
+    "igv": "18",
+    "value": "150",
+    "payable": "168"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93402376, ha sido aceptada",
+    "observations": []
+  }
+}

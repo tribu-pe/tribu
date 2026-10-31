@@ -1,0 +1,3 @@
+# Documents are signed with xml-crypto and node-forge
+
+Milestone 0 had to prove that a Document can be signed in Node in a way SUNAT accepts, or end with "redesign signing". It did: `xml-crypto` computes the XMLDSig signature (inclusive C14N, enveloped, `ds:Signature` with an `Id` inside `ext:ExtensionContent`) and `node-forge` opens the Certificate's `.pfx` once, at `tribu.create`. SUNAT beta accepted Invoices, Receipts, notes, Daily Summaries and Voided Documents signed this way with RSA-SHA1 and RSA-SHA256 (docs/research/milestone-0-results.md). Both stay confined to `src/signing/`, so replacing either touches one folder. Per ADR 0018 the default is the stronger accepted algorithm, `Signature.RsaSha256`.

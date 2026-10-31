@@ -1,0 +1,33 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Servidor",
+        "quantity": 1,
+        "value": 1234.565
+      }
+    ],
+    "rounding": {
+      "rounding": "half-up"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "general",
+      "name": "Régimen general",
+      "source": "Ley 32387"
+    }
+  },
+  "totals": {
+    "taxed": "1234.57",
+    "exempt": "0",
+    "unaffected": "0",
+    "igv": "222.22",
+    "value": "1234.57",
+    "payable": "1456.79"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93402370, ha sido aceptada",
+    "observations": []
+  }
+}

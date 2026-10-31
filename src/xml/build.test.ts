@@ -43,6 +43,22 @@ describe('build: invoice header', () => {
     );
   });
 
+  test('the issuer declares its main establishment, 0000 (ERR 3030)', () => {
+    const entity = 'cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity';
+    expect(text(root, `${entity}/cac:RegistrationAddress/cbc:AddressTypeCode`)).toBe('0000');
+  });
+
+  // firma.csv: every field of cac:Signature is required.
+  test('cac:Signature carries its ID, the issuer name and the URI (ERR 2076, 2081, 2083)', () => {
+    expect(text(root, 'cac:Signature/cbc:ID')).toBe('SignTribu');
+    expect(text(root, 'cac:Signature/cac:SignatoryParty/cac:PartyName/cbc:Name')).toBe(
+      'EMPRESA DE PRUEBA SAC',
+    );
+    expect(
+      text(root, 'cac:Signature/cac:DigitalSignatureAttachment/cac:ExternalReference/cbc:URI'),
+    ).toBe('#SignTribu');
+  });
+
   test('issuer and customer, with catalog 06 identity types', () => {
     const supplier = 'cac:AccountingSupplierParty/cac:Party';
     expect(text(root, `${supplier}/cac:PartyIdentification/cbc:ID`)).toBe('20000000001');
@@ -60,7 +76,8 @@ describe('build: invoice header', () => {
     expect(terms?.getElementsByTagName('cbc:PaymentMeansID')[0]?.textContent).toBe('Contado');
   });
 
-  test.todo('legend 1000 with the amount in words (exact wording to be confirmed in Milestone 0)');
+  // factura-2.0.csv validates cbc:Note only if present, and beta accepted Invoices without it.
+  test.todo('legend 1000 with the amount in words (optional: beta accepts Invoices without it)');
 });
 
 describe('build: invoice line', () => {
@@ -204,7 +221,16 @@ describe('build: receipt', () => {
     ).toBe('1');
   });
 
-  test.todo('an Anonymous Customer is coded schemeID "-" and ID "-" (Milestone 0, question 2)');
+  // Milestone 0, question 2: beta accepted "-" / "-", but rejected "-" as the name (ERR 2022).
+  test('an Anonymous Customer is coded "-" / "-", named with 3 or more characters', () => {
+    const root = parseXml(build(numbered(aReceipt({ customer: undefined }), 46)));
+    const party = 'cac:AccountingCustomerParty/cac:Party';
+    const id = one(root, `${party}/cac:PartyIdentification/cbc:ID`);
+    expect([id.getAttribute('schemeID'), id.textContent]).toEqual(['-', '-']);
+    expect(text(root, `${party}/cac:PartyLegalEntity/cbc:RegistrationName`)).toBe(
+      'CLIENTES VARIOS',
+    );
+  });
 });
 
 describe('build: credit note', () => {

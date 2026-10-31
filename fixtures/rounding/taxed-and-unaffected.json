@@ -1,0 +1,53 @@
+{
+  "input": {
+    "items": [
+      {
+        "description": "Servicio",
+        "quantity": 1,
+        "value": 10.1,
+        "unit": {
+          "catalog": "03",
+          "code": "ZZ",
+          "name": "UNIDAD (SERVICIOS)"
+        }
+      },
+      {
+        "description": "Donación",
+        "quantity": 1,
+        "value": 5.55,
+        "affectation": {
+          "catalog": "07",
+          "code": "30",
+          "name": "Inafecto - Operación Onerosa",
+          "taxScheme": {
+            "code": "9998",
+            "name": "INA",
+            "international": "FRE"
+          }
+        }
+      }
+    ],
+    "rounding": {
+      "rounding": "half-up"
+    },
+    "igv": {
+      "catalog": "igv",
+      "code": "general",
+      "name": "Régimen general",
+      "source": "Ley 32387"
+    }
+  },
+  "totals": {
+    "taxed": "10.1",
+    "exempt": "0",
+    "unaffected": "5.55",
+    "igv": "1.82",
+    "value": "15.65",
+    "payable": "17.47"
+  },
+  "sunat": {
+    "code": "0",
+    "description": "La Factura numero F001-93402377, ha sido aceptada",
+    "observations": []
+  }
+}

@@ -32,6 +32,10 @@ describe('sign', () => {
     expect(all(parseXml(signedInvoice().signed), signatureAt)).toHaveLength(1);
   });
 
+  test('ds:Signature has the Id that cac:Signature names (ERR 2085)', () => {
+    expect(one(parseXml(signedInvoice().signed), signatureAt).getAttribute('Id')).toBe('SignTribu');
+  });
+
   test('signs the whole document: Reference URI is empty (ERR 2090)', () => {
     const root = parseXml(signedInvoice().signed);
     expect(one(root, `${signatureAt}/ds:SignedInfo/ds:Reference`).getAttribute('URI')).toBe('');
@@ -85,7 +89,14 @@ describe('sign', () => {
     expect(signedInvoice().signed).not.toContain('\r');
   });
 
-  test.todo(
-    'the default algorithm is the strongest one SUNAT accepts (Milestone 0, question 4; ADR 0018)',
-  );
+  // Milestone 0, question 4: beta accepted RSA-SHA1 and RSA-SHA256; the default is the stronger.
+  test('signs with RSA-SHA256 by default (ADR 0018)', () => {
+    const { pfx, passphrase } = testCertificate();
+    const signed = sign(build({ ...anInvoice(), number: 1 }), openCertificate(pfx, passphrase));
+    expect(
+      one(parseXml(signed), `${signatureAt}/ds:SignedInfo/ds:SignatureMethod`).getAttribute(
+        'Algorithm',
+      ),
+    ).toBe('http://www.w3.org/2001/04/xmldsig-more#rsa-sha256');
+  });
 });

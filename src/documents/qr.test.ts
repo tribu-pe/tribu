@@ -21,5 +21,9 @@ describe('qrText', () => {
     expect(qrText(invoice).split('|')).toHaveLength(10); // 9 fields + the empty string after the trailing pipe
   });
 
-  test.todo('an Anonymous Customer: coding to be confirmed in Milestone 0 (question 2)');
+  // The QR repeats the XML's coding, which beta accepted in Milestone 0 (question 2).
+  test('an Anonymous Customer is "-" / "-"', () => {
+    const receipt = { ...aReceipt({ customer: undefined, issueDate: '2026-10-23' }), number: 46 };
+    expect(qrText(receipt)).toBe('20000000001|03|B001|46|7.63|50.00|2026-10-23|-|-|');
+  });
 });

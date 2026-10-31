@@ -71,7 +71,8 @@ async function post(url: string, body: string, timeout: number): Promise<string>
     });
     // Faults arrive with HTTP 500; read the body before deciding, or the code is lost.
     const text = await response.text();
-    if (!response.ok) throw faultOf(text, response.status);
+    // Beta also sends faults with HTTP 200 (Milestone 0), so the body decides.
+    if (!response.ok || /<(?:[\w-]+:)?Fault[\s>]/.test(text)) throw faultOf(text, response.status);
     return text;
   } catch (error) {
     if (error instanceof TransportFailure) throw error;
@@ -109,6 +110,24 @@ function statusAnswer(xml: string): StatusAnswer {
     : { statusCode, cdr: cdrFromBase64(content) };
 }
 
+/**
+ * Reading SUNAT's answer happens after the file arrived: a failure here must never read as
+ * "not sent", or the document would be retried and registered twice (ADR 0015).
+ */
+function answered<T>(read: (xml: string) => T): (xml: string) => T {
+  return (xml) => {
+    try {
+      return read(xml);
+    } catch (error) {
+      if (error instanceof TransportFailure) throw error;
+      throw new TransportFailure(
+        `SUNAT answered, but the answer could not be read: ${error instanceof Error ? error.message : String(error)}`,
+        { sent: true },
+      );
+    }
+  };
+}
+
 // shortcut: the SOAP bodies are read by local-name regex; Milestone 0 confirms the production WSDL.
 export function sunatTransport(input: SunatTransportInput): SunatTransport {
   const billService = endpoints[input.env].bill;
@@ -116,7 +135,7 @@ export function sunatTransport(input: SunatTransportInput): SunatTransport {
 
   return {
     async sendBill(submission: Submission): Promise<Cdr> {
-      return decodeApplicationResponse(
+      return answered(decodeApplicationResponse)(
         await post(
           billService,
           sendBillEnvelope({
@@ -154,7 +173,7 @@ export function sunatTransport(input: SunatTransportInput): SunatTransport {
         getStatusEnvelope({ issuerRuc: input.issuerRuc, sol: input.sol, ticket }),
         input.timeout,
       );
-      return statusAnswer(text);
+      return answered(statusAnswer)(text);
     },
 
     ...(consultService === undefined
@@ -173,7 +192,7 @@ export function sunatTransport(input: SunatTransportInput): SunatTransport {
               }),
               input.timeout,
             );
-            return decodeApplicationResponse(text);
+            return answered(decodeApplicationResponse)(text);
           },
         }),
   } as SunatTransport;

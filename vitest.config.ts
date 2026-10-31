@@ -10,7 +10,13 @@ export default defineConfig({
       },
       {
         // Talks to SUNAT beta: manual or nightly only, never blocks a pull request.
-        test: { name: 'beta', include: ['test/beta/**/*.test.ts'], testTimeout: 60_000 },
+        test: {
+          name: 'beta',
+          include: ['test/beta/**/*.test.ts'],
+          testTimeout: 60_000,
+          // Milestone 0: beta answered HTTP 401 to parallel sends; one request at a time.
+          fileParallelism: false,
+        },
       },
     ],
   },
