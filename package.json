@@ -1,6 +1,6 @@
 {
   "name": "tribu",
-  "version": "0.1.0-experimental.0",
+  "version": "0.1.0-experimental.1",
   "description": "SUNAT electronic invoicing for TypeScript: issue invoices, receipts and notes to Peru's tax authority.",
   "keywords": [
     "sunat",
