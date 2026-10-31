@@ -1,4 +1,5 @@
 import type { CatalogEntry } from '../catalogs/catalog';
+import type { DetraccionEntry } from '../catalogs/detraccion';
 import type { IgvRegime } from '../catalogs/igv';
 import { Igv } from '../catalogs/igv';
 import { Affectation, Currency, DocumentType, Identity, Unit } from '../catalogs/shared';
@@ -9,6 +10,7 @@ import { Dni } from './dni';
 import type {
   CreditNote,
   DebitNote,
+  Detraccion,
   Document,
   IdentifiedCustomer,
   Installment,
@@ -37,6 +39,7 @@ export interface CalculationSettings {
     readonly name: string;
     readonly ubigeo: string;
     readonly igv?: IgvRegime;
+    readonly detraccionAccount?: string;
   };
   readonly defaults: { readonly unit: CatalogEntry; readonly affectation: CatalogEntry };
   readonly rounding: RoundingValue;
@@ -85,6 +88,7 @@ export interface DocumentInput {
   readonly payment?: { readonly installments: readonly InstallmentInput[] };
   readonly modifies?: string | RecordLike | undefined;
   readonly reason?: CatalogEntry;
+  readonly detraccion?: DetraccionEntry;
 }
 
 const DEFAULT_SERIES: SeriesConfig = {
@@ -357,13 +361,86 @@ function sumTotals(items: readonly Item[]): Totals {
   return { taxed, exempt, unaffected, igv, value, payable: value.plus(igv) };
 }
 
-function paymentOf(input: DocumentInput['payment'], payable: Decimal): Payment {
+/** The amount still owed on credit: the total less the detracción the Customer deposits (ADR 0020). */
+function paymentOf(input: DocumentInput['payment'], pending: Decimal): Payment {
   if (input === undefined) return { terms: 'cash' };
   const installments: Installment[] = input.installments.map((installment) => ({
     amount: amountOf(installment.amount),
     due: installment.due,
   }));
-  return { terms: 'credit', pending: payable, installments };
+  return { terms: 'credit', pending, installments };
+}
+
+/**
+ * Checks a detracción request before anything is calculated. Only Invoices in soles: a Receipt
+ * rarely carries one, and a foreign-currency Invoice needs an exchange rate SUNAT leaves to the
+ * Issuer (docs/research/detracciones-2026-10.md § 4, § 6, unconfirmed items 7).
+ */
+function checkDetraccion(
+  type: CatalogEntry,
+  input: DocumentInput,
+  currency: CatalogEntry,
+  account: string | undefined,
+  issues: Issue[],
+): void {
+  const entry = input.detraccion;
+  if (entry === undefined) return;
+  const source = 'docs/research/detracciones-2026-10.md';
+  if (type.code !== DocumentType.Invoice.code) {
+    issues.push(
+      issue(
+        'detraccion',
+        'tribu',
+        `Tribu adds a detracción only to Invoices, not to a ${type.name}.`,
+        'Remove detraccion, or issue an Invoice.',
+        source,
+      ),
+    );
+  }
+  if (entry.catalog !== '54' || typeof entry.rate !== 'string') {
+    issues.push(
+      issue(
+        'detraccion',
+        '3033',
+        'The detracción must be a constant of catalog 54.',
+        'Use a Detraccion constant, such as Detraccion.Maintenance.',
+        'ADR 0020',
+      ),
+    );
+  }
+  if (currency.code !== Currency.Pen.code) {
+    issues.push(
+      issue(
+        'detraccion',
+        'tribu',
+        'Tribu adds a detracción only to Invoices in soles: in another currency it needs an exchange rate.',
+        'Issue the Invoice in PEN.',
+        source,
+      ),
+    );
+  }
+  if (account === undefined || account.trim().length === 0) {
+    issues.push(
+      issue(
+        'detraccion',
+        '3034',
+        "The Invoice needs the Issuer's Banco de la Nación account for the detracción.",
+        'Pass issuer.detraccionAccount to tribu.create.',
+        'sources/sunat/reglas-validacion-2026-08-26/factura-2.0.csv',
+      ),
+    );
+  }
+}
+
+function detraccionOf(
+  entry: DetraccionEntry,
+  payable: Decimal,
+  account: string,
+  rounding: RoundingValue,
+): Detraccion {
+  const rate = Decimal.from(entry.rate);
+  const amount = payable.times(rate).div(HUNDRED).round(2, rounding);
+  return { code: entry, rate, amount, account };
 }
 
 function identifyCustomer(input: CustomerInput, issues: Issue[]): IdentifiedCustomer | undefined {
@@ -511,6 +588,7 @@ export function calculate(
 
   const source = affected?.document;
   const currency = input.currency ?? source?.currency ?? Currency.Pen;
+  checkDetraccion(type, input, currency, settings.issuer.detraccionAccount, issues);
 
   let customer: IdentifiedCustomer;
   if (input.customer !== undefined) {
@@ -592,7 +670,20 @@ export function calculate(
   if (issues.length > 0) throw new TribuError({ kind: 'validation', issues });
 
   const totals = sumTotals(items);
-  const payment = paymentOf(input.payment, totals.payable);
+  const rounding = settings.rounding ?? Rounding.HalfUp;
+  const detraccion =
+    input.detraccion === undefined
+      ? undefined
+      : detraccionOf(
+          input.detraccion,
+          totals.payable,
+          settings.issuer.detraccionAccount ?? '',
+          rounding,
+        );
+  const payment = paymentOf(
+    input.payment,
+    detraccion === undefined ? totals.payable : totals.payable.minus(detraccion.amount),
+  );
   const series = seriesOf(type, input.series, modifies, settings.series ?? DEFAULT_SERIES);
 
   const document: Document = {
@@ -611,6 +702,7 @@ export function calculate(
       ubigeo: settings.issuer.ubigeo,
     },
     ...(input.number === undefined ? {} : { number: input.number }),
+    ...(detraccion === undefined ? {} : { detraccion }),
   };
 
   if (isNote) {

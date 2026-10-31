@@ -79,7 +79,20 @@ export interface DocumentBase {
   readonly issuer: Issuer;
 }
 
-export interface Invoice extends DocumentBase {}
+/** The detracción an Invoice states (docs/research/detracciones-2026-10.md § 4; ADR 0020). */
+export interface Detraccion {
+  /** The catalog 54 good or service. */
+  readonly code: CatalogEntry;
+  readonly rate: Decimal;
+  /** Always in soles (ERR 3208). */
+  readonly amount: Decimal;
+  /** The Issuer's account at Banco de la Nación. */
+  readonly account: string;
+}
+
+export interface Invoice extends DocumentBase {
+  readonly detraccion?: Detraccion;
+}
 
 export interface Receipt extends DocumentBase {}
 
