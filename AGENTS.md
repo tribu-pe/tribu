@@ -55,5 +55,5 @@ The rules in `.dependency-cruiser.cjs` and `biome.json` enforce where each packa
 3. **Keep the glossary current.** When a domain term is introduced or sharpened, update `GLOSSARY.md` in the same change. It holds definitions only, never implementation details.
 4. **Don't name other SDKs or projects in repository documents.** Refer to them generically ("an implementation", "the oracle implementation").
 5. **Secrets never enter the repository or the logs.** That covers the SOL password, real certificates (`.pfx`/`.p12`) and their passphrases. Use only generated test certificates and SUNAT's public beta credentials.
-6. **Code, comments and docs are in English.** `README.es.md` is the one Spanish document.
+6. **Code, comments and docs are in English.** The Spanish documents are `README.es.md`, `CONTRIBUTING.es.md` and `docs/guide/es/`; change them together with their English versions.
 7. **Commit or push only when asked.** Never work directly on `main`.
