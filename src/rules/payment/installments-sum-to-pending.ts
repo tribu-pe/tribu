@@ -9,7 +9,7 @@ export const installmentsSumToPending = Rule.define({
   sunatCode: '3319',
   effectiveFrom: '2022-01-01',
   why: 'The Installments must add up to the amount pending payment.',
-  fix: 'Adjust the installments so their sum equals the payable amount.',
+  fix: 'Adjust the installments so their sum equals the amount pending: the total, less the detracción if there is one.',
   source: 'sources/sunat/reglas-validacion-2026-08-26/factura-2.0.csv',
   check(document) {
     if (document.payment.terms !== 'credit') return true;

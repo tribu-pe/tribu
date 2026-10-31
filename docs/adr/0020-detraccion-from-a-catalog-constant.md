@@ -1,0 +1,9 @@
+# A detracción is chosen by its catalog 54 constant, which carries the rate
+
+An Invoice for goods or services subject to the SPOT must state the catalog 54 code, the rate, the amount in soles and the Issuer's Banco de la Nación account (docs/research/detracciones-2026-10.md). SUNAT validates none of the arithmetic: not the rate against the code, not the amount against the total, and not the amount pending on credit against the total less the detracción. A caller who types a rate or an amount can get all of it wrong and still be accepted. So, as with the IGV Regime (ADR 0012), Tribu takes no number. The caller passes a frozen constant (`detraccion: Detraccion.Maintenance`), and the constant carries its code and its rate. Tribu computes the amount as rate × the total including IGV, rounded to cents. On credit, the amount pending is the total less the detracción (R.S. 193-2020, Annex I, item 64-A). The account belongs to the Issuer, so it is set once, as `issuer.detraccionAccount` in `tribu.create`. Tribu does not decide whether an operation is subject: that depends on what is sold and on exclusions it cannot see, and SUNAT checks no threshold either.
+
+## Consequences
+
+- Only codes with one confirmed rate are constants. 004 depends on a monthly SUNAT list, 027/028/099 are other regimes, and eight codes have no norm behind them today. The code-to-rate mapping is matched by name and is *unconfirmed*.
+- Only Invoices in soles. A Receipt rarely carries one, and a foreign-currency Invoice needs an exchange rate that SUNAT leaves to the Issuer. Both fail validation with an explanation, so they can be added later without breaking callers.
+- When SUNAT changes a rate, the fix is data in `src/catalogs/detraccion.ts`. A second rate for the same code would need dated rates, as for IGV.

@@ -17,7 +17,7 @@ Tribu calculates the amounts, validates the Document against SUNAT's rules befor
 > **Experimental.** Tribu is published only as an experimental version. SUNAT's beta environment accepts every document type it issues ([Milestone 0 results](docs/research/milestone-0-results.md)), but it has **not been verified in production**. Try it in beta first. If you use it in production, read [Trying it in production](docs/guide/production.md) and please [tell us how it went](https://github.com/tribu-pe/tribu/issues/new?template=production-report.md).
 
 > [!IMPORTANT]
-> **v0.1 does not support detracciones.** If your invoices are subject to them, don't use v0.1 for those invoices yet. Perceptions, retentions, advance payments, exports, free operations, ISC and ICBPER are also out of scope (see [What v0.1 covers](#what-v01-covers)).
+> **Detracciones work only on Invoices in soles**, for the goods and services with one confirmed rate ([Detracciones](docs/guide/documents.md#detracciones)). Perceptions, retentions, advance payments, exports, free operations, ISC and ICBPER are out of scope (see [What v0.1 covers](#what-v01-covers)).
 
 ## Why Tribu
 
@@ -95,8 +95,9 @@ The whole guide: [docs/guide](docs/guide/README.md). The vocabulary: [GLOSSARY.m
 | IGV | General and the reduced rate for restaurants and hotels |
 | Currency | PEN by default, USD |
 | Payment Terms | Cash, or credit with Installments |
+| Detracciones | On Invoices in soles; the amount and the net amount pending are calculated |
 
-**Not yet:** detracciones, perceptions, retentions, advance payments, exports and Invoices without RUC, free operations, ISC, ICBPER, the dispatch guide, PDF and QR images, and official support for OSEs (a custom `transport` works, but OSEs are not tested).
+**Not yet:** detracciones on Receipts or in USD, perceptions, retentions, advance payments, exports and Invoices without RUC, free operations, ISC, ICBPER, the dispatch guide, PDF and QR images, and official support for OSEs (a custom `transport` works, but OSEs are not tested).
 
 ## Contributing
 

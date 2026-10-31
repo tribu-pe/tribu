@@ -40,6 +40,29 @@ await sunat.invoice({
 
 Sin `payment`, la forma de pago es contado. Con `installments` es crédito, y las cuotas deben sumar el monto neto pendiente de pago.
 
+### Detracciones
+
+Cuando una factura vende bienes o servicios sujetos a detracción (SPOT), el cliente deposita parte del total en tu cuenta del Banco de la Nación en vez de pagártela a ti. Configura la cuenta una vez y nombra el bien o servicio con una constante del catálogo 54: la constante trae su tasa, así que nunca escribes un porcentaje.
+
+```ts
+import tribu, { Detraccion } from 'tribu';
+
+const sunat = tribu.create({
+  issuer: { ruc: '20000000001', name: 'MI EMPRESA SAC', ubigeo: '150101', detraccionAccount: '00-000-123456' },
+  // ...
+});
+
+await sunat.invoice({
+  customer: { ruc: '20123456786', name: 'CLIENTE SAC' },
+  items: [{ description: 'Mantenimiento de equipos', quantity: 1, price: 1180 }],
+  detraccion: Detraccion.Maintenance, // código 020, 12 %: S/ 141.60
+});
+```
+
+Tribu agrega el tipo de operación 1001, la leyenda "Operación sujeta a detracción", tu cuenta, y el código, la tasa y el monto en soles. Al crédito, el monto pendiente y las cuotas deben dejar fuera la detracción (S/ 1,038.40 aquí). SUNAT no lo revisa; Tribu sí.
+
+Tribu no decide si una venta está sujeta: eso depende de lo que vendes y de exclusiones legales. Solo facturas en soles, y solo los códigos con una sola tasa confirmada (`Detraccion.all()` los lista). Las tasas y sus fuentes están en [docs/research/detracciones-2026-10.md](../../research/detracciones-2026-10.md) (en inglés).
+
 ### Boletas
 
 Una boleta se envía de inmediato y vuelve con su CDR, igual que una factura. El cliente es opcional mientras el total no pase de S/ 700.00.

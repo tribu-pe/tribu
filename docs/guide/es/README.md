@@ -6,7 +6,7 @@
 |---|---|
 | [Por qué Tribu](why-tribu.md) | Qué hace Tribu por ti, paso a paso, comparado con hacerlo tú mismo |
 | [Ejemplos](examples.md) | Recetas cortas: facturas, boletas, resúmenes diarios, notas, bajas, errores, pruebas |
-| [Comprobantes](documents.md) | Montos e IGV, facturas, boletas, notas de crédito y débito, comunicación de baja |
+| [Comprobantes](documents.md) | Montos e IGV, facturas, detracciones, boletas, notas de crédito y débito, comunicación de baja |
 | [Records y errores](records-and-errors.md) | Qué guardar, estados, `TribuError` y qué pasa cuando falla la red |
 | [Probar tu código](testing.md) | `fakeSunat()`, un SUNAT en memoria para tus pruebas |
 | [Configuración](configuration.md) | Entornos, cada opción de `tribu.create`, puntos de entrada |

@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { aCreditNote, anInvoice, aReceipt } from '../../test/support/documents';
+import { aCreditNote, anInvoice, aReceipt, settings } from '../../test/support/documents';
 import { all, one, parseXml, text } from '../../test/support/xml';
 import { Reason } from '../catalogs/documents/credit-note';
-import { Affectation, Currency } from '../catalogs/index';
+import { Affectation, Currency, Detraccion } from '../catalogs/index';
 import { build } from './build';
 
 const numbered = <T extends object>(document: T, number = 123) => ({ ...document, number });
@@ -257,5 +257,63 @@ describe('build: credit note', () => {
 
   test('its currency is the document currency', () => {
     expect(text(root, 'cbc:DocumentCurrencyCode')).toBe(Currency.Pen.code);
+  });
+});
+
+// factura-2.0.csv rules 57, 58, 104–106; docs/research/detracciones-2026-10.md § 4; ADR 0020.
+describe('build: invoice with a detracción', () => {
+  const issuer = { ...settings().issuer, detraccionAccount: '00-000-123456' };
+  const root = parseXml(
+    build(
+      numbered(
+        anInvoice(
+          {
+            items: [{ description: 'Mantenimiento', quantity: 1, price: 1180 }],
+            detraccion: Detraccion.Maintenance,
+            payment: { installments: [{ amount: '1038.40', due: '2026-11-30' }] },
+          },
+          { issuer },
+        ),
+      ),
+    ),
+  );
+  const terms = (id: string) =>
+    all(root, 'cac:PaymentTerms').filter((node) => text(node, 'cbc:ID') === id);
+
+  test('operation type 1001, subject to detracción (catalog 51)', () => {
+    expect(one(root, 'cbc:InvoiceTypeCode').getAttribute('listID')).toBe('1001');
+  });
+
+  test('legend 2006 (catalog 52, OBS 4265)', () => {
+    const note = one(root, 'cbc:Note');
+    expect(note.getAttribute('languageLocaleID')).toBe('2006');
+    expect(note.textContent).toBe('Operación sujeta a detracción');
+  });
+
+  test("the Issuer's Banco de la Nación account (ERR 3034)", () => {
+    expect(text(root, 'cac:PaymentMeans/cbc:ID')).toBe('Detraccion');
+    expect(text(root, 'cac:PaymentMeans/cbc:PaymentMeansCode')).toBe('001');
+    expect(text(root, 'cac:PaymentMeans/cac:PayeeFinancialAccount/cbc:ID')).toBe('00-000-123456');
+  });
+
+  test('the code, rate and amount in PEN (ERR 3127, 3033, 3035, 3208)', () => {
+    const [detraccion] = terms('Detraccion');
+    if (detraccion === undefined) throw new Error('no Detraccion PaymentTerms');
+    expect(text(detraccion, 'cbc:PaymentMeansID')).toBe('020');
+    expect(text(detraccion, 'cbc:PaymentPercent')).toBe('12');
+    expect(text(detraccion, 'cbc:Amount')).toBe('141.60');
+    expect(one(detraccion, 'cbc:Amount').getAttribute('currencyID')).toBe('PEN');
+  });
+
+  test('keeps the Payment Terms, with the amount pending net of the detracción', () => {
+    const [credit] = terms('FormaPago');
+    expect(credit === undefined ? undefined : text(credit, 'cbc:Amount')).toBe('1038.40');
+    expect(text(root, 'cac:LegalMonetaryTotal/cbc:PayableAmount')).toBe('1180.00');
+  });
+
+  test('an Invoice without a detracción carries none of it (ERR 3128)', () => {
+    const plain = parseXml(build(numbered(anInvoice())));
+    expect(all(plain, 'cbc:Note')).toHaveLength(0);
+    expect(all(plain, 'cac:PaymentMeans')).toHaveLength(0);
   });
 });

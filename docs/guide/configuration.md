@@ -18,7 +18,7 @@ Creating a production client with SUNAT's public test user (`MODDATOS`) fails, w
 | Option | Default | |
 |---|---|---|
 | `env` | `SUNAT_ENV`, then `'production'` | `'beta'` or `'production'` |
-| `issuer` | required | `ruc`, `name`, `ubigeo`, `igv` (`Igv.General`) |
+| `issuer` | required | `ruc`, `name`, `ubigeo`, `igv` (`Igv.General`), `detraccionAccount` (your Banco de la Nación account, for [detracciones](documents.md#detracciones)) |
 | `sol` | `SUNAT_SOL_USER`, `SUNAT_SOL_PASSWORD` | SOL user without the RUC |
 | `certificate` | required | `{ pfx: Buffer, passphrase }` |
 | `nextNumber` | none | `(series) => Promise<number>`; otherwise pass `number` on each call |

@@ -17,7 +17,7 @@ Tribu calcula los montos, valida el comprobante contra las reglas de SUNAT antes
 > **Experimental.** Tribu solo está publicado como versión experimental. El entorno beta de SUNAT acepta todos los tipos de comprobante que emite ([resultados del Milestone 0](docs/research/milestone-0-results.md), en inglés), pero **no se ha verificado en producción**. Pruébalo primero en beta. Si lo usas en producción, lee [Probar en producción](docs/guide/es/production.md) y [cuéntanos cómo te fue](https://github.com/tribu-pe/tribu/issues/new?template=production-report.md).
 
 > [!IMPORTANT]
-> **La v0.1 no soporta detracciones.** Si tus facturas están sujetas a detracción, todavía no uses la v0.1 para esas facturas. Tampoco cubre percepciones, retenciones, anticipos, exportaciones, operaciones gratuitas, ISC ni ICBPER (ver [Qué cubre la v0.1](#qué-cubre-la-v01)).
+> **Las detracciones solo funcionan en facturas en soles**, para los bienes y servicios con una sola tasa confirmada ([Detracciones](docs/guide/es/documents.md#detracciones)). No cubre percepciones, retenciones, anticipos, exportaciones, operaciones gratuitas, ISC ni ICBPER (ver [Qué cubre la v0.1](#qué-cubre-la-v01)).
 
 ## Por qué Tribu
 
@@ -95,8 +95,9 @@ Toda la guía: [docs/guide/es](docs/guide/es/README.md). El vocabulario: [GLOSSA
 | IGV | General y la tasa reducida para restaurantes y hoteles |
 | Moneda | PEN por defecto, USD |
 | Forma de pago | Contado, o crédito con cuotas |
+| Detracciones | En facturas en soles; se calculan el monto y el neto pendiente de pago |
 
-**Todavía no:** detracciones, percepciones, retenciones, anticipos, exportaciones y facturas sin RUC, operaciones gratuitas, ISC, ICBPER, guía de remisión, PDF e imagen del QR, y soporte oficial para OSE (un `transport` propio funciona, pero los OSE no están probados).
+**Todavía no:** detracciones en boletas o en dólares, percepciones, retenciones, anticipos, exportaciones y facturas sin RUC, operaciones gratuitas, ISC, ICBPER, guía de remisión, PDF e imagen del QR, y soporte oficial para OSE (un `transport` propio funciona, pero los OSE no están probados).
 
 ## Contribuir
 

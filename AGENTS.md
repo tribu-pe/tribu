@@ -43,7 +43,7 @@ The rules in `.dependency-cruiser.cjs` and `biome.json` enforce where each packa
 | [docs/agents/structure.md](docs/agents/structure.md) | Repository layout, layers, the pipeline, and where each kind of change goes |
 | [docs/agents/code-style.md](docs/agents/code-style.md) | How to write code here, with examples and a pre-commit checklist |
 | [docs/conventions.md](docs/conventions.md) | The full conventions; they win if anything else disagrees |
-| [docs/adr/](docs/adr) | Why things are the way they are (0001–0019). Read the relevant ADR before changing a design |
+| [docs/adr/](docs/adr) | Why things are the way they are (0001–0020). Read the relevant ADR before changing a design |
 | [docs/research/sunat-facts-2026-10.md](docs/research/sunat-facts-2026-10.md) | Verified SUNAT facts, with sources |
 | [docs/research/milestone-0-results.md](docs/research/milestone-0-results.md) | What SUNAT beta answered, with the tests that prove it |
 | [sources/sunat/](sources/sunat) | SUNAT's validation workbook as CSV (rules, return codes, catalogs). Search here before anything else; cite it as `sources/sunat/reglas-validacion-2026-08-26/<file>.csv` |

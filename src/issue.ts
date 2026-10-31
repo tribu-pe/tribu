@@ -99,6 +99,7 @@ export interface ClientContext {
     readonly name: string;
     readonly ubigeo: string;
     readonly igv: IgvRegime;
+    readonly detraccionAccount?: string;
   };
   readonly sol: { readonly user: string; readonly password: string };
   readonly certificate: OpenCertificate;
@@ -128,6 +129,9 @@ function settingsOf(context: ClientContext): CalculationSettings {
       name: context.issuer.name,
       ubigeo: context.issuer.ubigeo,
       igv: context.issuer.igv,
+      ...(context.issuer.detraccionAccount === undefined
+        ? {}
+        : { detraccionAccount: context.issuer.detraccionAccount }),
     },
     defaults: { unit: Unit.Goods, affectation: Affectation.Taxed },
     rounding: context.rounding,

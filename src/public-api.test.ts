@@ -25,6 +25,7 @@ describe('public entry points', () => {
       [
         'Affectation',
         'Currency',
+        'Detraccion',
         'DocumentType',
         'Identity',
         'Igv',
