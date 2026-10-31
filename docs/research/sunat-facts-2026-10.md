@@ -35,6 +35,14 @@ Receipts are voided through the Daily Summary with status "anulado" (code 3), un
 
 - Unit Value, Unit Price and quantity: up to **10 decimals**, n(12,10) (ERR 2369, 2367, 2025).
 - Line and total amounts: **2 decimals**, n(12,2).
+- **Positive amounts.** On an onerous operation SUNAT rejects zero and negatives (`factura-2.0.csv`; the Notes repeat it in `nota-credito-2.0.csv` and `nota-debito-2.0.csv`, and Receipts in `boleta-2.0.csv`):
+  - quantity `cbc:InvoicedQuantity`: zero is ERR 2024, a non-positive or malformed decimal is ERR 2025;
+  - Unit Value `cac:Price/cbc:PriceAmount`: "decimal positivo … y diferente de cero", ERR 2369;
+  - Unit Price `cac:AlternativeConditionPrice/cbc:PriceAmount`: the same rule, ERR 2367;
+  - line value of sale `cbc:LineExtensionAmount`: the same rule on the 2-decimal amount, ERR 2370. A price that rounds the line to 0.00 is therefore rejected.
+- **Free operations (tax code 9996) are unconfirmed.** Row ERR 2369 asks for a non-zero Unit Value, while ERR 2640 reads as if a free line should carry only a reference amount. The workbook seems to contradict itself; check it in beta before Tribu supports free operations. v0.1 does not, so Tribu requires every amount of a line to be positive.
+- **Number.** The id is `<Serie>-<Número>`, `an..13` (ERR 1035 when it differs from the file name), so the Number has at most 8 digits. The workbook does not say whether 0 is valid: *unconfirmed*. Tribu rejects only what is not a whole number of 0 to 99999999.
+- **Dates** (`cbc:IssueDate`, `cbc:PaymentDueDate`) are `YYYY-MM-DD`, `an10`.
 - Every arithmetic check tolerates **±1**. On Invoices it is an ERROR (3270, 3271, 3103, 3292, 3277, 3278, 3291, 3294, 3279, 3280); on Receipts it is mostly an OBSERVATION (4287–4312). `PayableRoundingAmount` must be ≤ 1 (ERR 3303).
 - SUNAT publishes a list of "Observaciones que migran a Error". Check it before relying on an observation staying non-blocking.
 
