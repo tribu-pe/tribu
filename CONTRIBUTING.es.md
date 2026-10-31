@@ -18,7 +18,7 @@ Un Record o un error de Tribu nunca contiene tu clave ni tu certificado, pero tu
 
 [Abre un reporte de error](https://github.com/tribu-pe/tribu/issues/new?template=bug.md) con:
 
-- el commit de Tribu que instalaste y tu versión de Node.js;
+- tu versión de Tribu (`npm ls tribu`) y tu versión de Node.js;
 - el entorno: `beta` o `production`;
 - qué llamaste, con los datos de entrada (sin secretos);
 - qué pasó: `error.kind`, `error.issues`, y el código y mensaje de SUNAT (`record.cdr` o el error);

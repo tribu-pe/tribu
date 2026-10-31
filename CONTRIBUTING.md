@@ -18,7 +18,7 @@ A Record or an error from Tribu never contains your password or Certificate, but
 
 [Open a bug report](https://github.com/tribu-pe/tribu/issues/new?template=bug.md) with:
 
-- the Tribu commit you installed and your Node.js version;
+- your Tribu version (`npm ls tribu`) and your Node.js version;
 - the Environment: `beta` or `production`;
 - what you called, with the input (without secrets);
 - what happened: `error.kind`, `error.issues`, and SUNAT's code and message (`record.cdr` or the error);

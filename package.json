@@ -1,7 +1,6 @@
 {
   "name": "tribu",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0-experimental.0",
   "description": "SUNAT electronic invoicing for TypeScript: issue invoices, receipts and notes to Peru's tax authority.",
   "keywords": [
     "sunat",
@@ -35,9 +34,13 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public",
+    "tag": "experimental"
+  },
   "scripts": {
     "build": "tsdown",
-    "prepare": "tsdown",
+    "prepublishOnly": "pnpm check && pnpm build",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "format": "biome check --write .",

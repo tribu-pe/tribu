@@ -14,7 +14,7 @@ Tribu calcula los montos, valida el comprobante contra las reglas de SUNAT antes
 [Read in English](README.md)
 
 > [!WARNING]
-> **Experimental.** Tribu todavía no está publicado en npm. El entorno beta de SUNAT acepta todos los tipos de comprobante que emite ([resultados del Milestone 0](docs/research/milestone-0-results.md), en inglés), pero **no se ha verificado en producción**. Pruébalo primero en beta. Si lo usas en producción, lee [Probar en producción](docs/guide/es/production.md) y [cuéntanos cómo te fue](https://github.com/tribu-pe/tribu/issues/new?template=production-report.md).
+> **Experimental.** Tribu solo está publicado como versión experimental. El entorno beta de SUNAT acepta todos los tipos de comprobante que emite ([resultados del Milestone 0](docs/research/milestone-0-results.md), en inglés), pero **no se ha verificado en producción**. Pruébalo primero en beta. Si lo usas en producción, lee [Probar en producción](docs/guide/es/production.md) y [cuéntanos cómo te fue](https://github.com/tribu-pe/tribu/issues/new?template=production-report.md).
 
 > [!IMPORTANT]
 > **La v0.1 no soporta detracciones.** Si tus facturas están sujetas a detracción, todavía no uses la v0.1 para esas facturas. Tampoco cubre percepciones, retenciones, anticipos, exportaciones, operaciones gratuitas, ISC ni ICBPER (ver [Qué cubre la v0.1](#qué-cubre-la-v01)).
@@ -30,15 +30,13 @@ Sin Tribu, tú calculas el IGV, escribes el XML UBL, lo firmas, lo comprimes, lo
 
 ## Instalación
 
-Hasta la primera versión en npm, instálalo directo desde GitHub. El paquete se compila solo al instalarse.
-
 ```sh
-npm install github:tribu-pe/tribu
+npm install tribu@experimental
+# o
+pnpm add tribu@experimental
 ```
 
-Para quedarte en una versión que ya probaste, fija un commit: `npm install github:tribu-pe/tribu#<commit>`.
-
-Con pnpm (`pnpm add github:tribu-pe/tribu`), pnpm bloquea la compilación la primera vez y muestra una entrada `allowBuilds`. Agrega esa entrada a tu `pnpm-workspace.yaml` y vuelve a correr `pnpm add`.
+Las versiones `experimental` (`0.1.0-experimental.N`) solo están probadas contra SUNAT beta. Habrá una versión estable cuando Tribu esté verificado en producción.
 
 ## Inicio rápido
 
