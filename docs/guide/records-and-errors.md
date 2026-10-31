@@ -6,6 +6,8 @@ Tribu stores nothing. Every operation returns a `record`: plain, serializable JS
 
 **Save the Record before doing anything else.**
 
+To hand the Customer a PDF with SUNAT's QR (the Printed Representation), pass the Record to [`@tribu-pe/pdf`](https://github.com/tribu-pe/pdf): `await pdf(record)`.
+
 Compare statuses by code, which survives JSON:
 
 ```ts

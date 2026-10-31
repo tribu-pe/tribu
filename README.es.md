@@ -82,6 +82,7 @@ En producción, `sol` y `env` suelen venir del entorno: `SUNAT_ENV`, `SUNAT_SOL_
 | [Configuración](docs/guide/es/configuration.md) | Entornos, opciones, puntos de entrada |
 | [Plazos de SUNAT](docs/guide/es/deadlines.md) | Los plazos que Tribu verifica |
 | [Probar en producción](docs/guide/es/production.md) | Qué necesitas y qué no se ha verificado todavía |
+| [@tribu-pe/pdf](https://github.com/tribu-pe/pdf) | El PDF para tu cliente (representación impresa): A4 y ticket, en un paquete aparte |
 
 Toda la guía: [docs/guide/es](docs/guide/es/README.md). El vocabulario: [GLOSSARY.md](GLOSSARY.md) (en inglés).
 
@@ -97,7 +98,7 @@ Toda la guía: [docs/guide/es](docs/guide/es/README.md). El vocabulario: [GLOSSA
 | Forma de pago | Contado, o crédito con cuotas |
 | Detracciones | En facturas en soles; se calculan el monto y el neto pendiente de pago |
 
-**Todavía no:** detracciones en boletas o en dólares, percepciones, retenciones, anticipos, exportaciones y facturas sin RUC, operaciones gratuitas, ISC, ICBPER, guía de remisión, PDF e imagen del QR, y soporte oficial para OSE (un `transport` propio funciona, pero los OSE no están probados).
+**Todavía no:** detracciones en boletas o en dólares, percepciones, retenciones, anticipos, exportaciones y facturas sin RUC, operaciones gratuitas, ISC, ICBPER, guía de remisión, y soporte oficial para OSE (un `transport` propio funciona, pero los OSE no están probados).
 
 ## Contribuir
 
