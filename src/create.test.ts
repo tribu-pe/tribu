@@ -102,6 +102,19 @@ describe('tribu.create: validated once, every problem at once', () => {
     expect(error.issues[0]?.path).toBe('series.creditNote.invoice');
   });
 
+  test("the Banco de la Nación account is kept for detracciones, and can't be empty (ERR 3034)", () => {
+    const sunat = tribu.create({
+      ...base(),
+      env: 'beta',
+      issuer: { ...ISSUER, detraccionAccount: '00-000-123456' },
+    });
+    expect(sunat.config.issuer.detraccionAccount).toBe('00-000-123456');
+    const error = configError(() =>
+      tribu.create({ ...base(), env: 'beta', issuer: { ...ISSUER, detraccionAccount: ' ' } }),
+    );
+    expect(error.issues[0]).toMatchObject({ code: '3034', path: 'issuer.detraccionAccount' });
+  });
+
   test('the configuration is frozen', () => {
     const sunat = tribu.create({ ...base(), env: 'beta' });
     expect(Object.isFrozen(sunat.config)).toBe(true);

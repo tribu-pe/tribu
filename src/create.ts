@@ -49,6 +49,8 @@ export interface IssuerOptions {
   readonly name: string;
   readonly ubigeo: string;
   readonly igv?: IgvRegime;
+  /** The Issuer's Banco de la Nación account, for Invoices with a detracción (ADR 0020). */
+  readonly detraccionAccount?: string;
 }
 
 export interface CreateOptions {
@@ -84,6 +86,7 @@ export interface TribuConfig {
     readonly name: string;
     readonly ubigeo: string;
     readonly igv: IgvRegime;
+    readonly detraccionAccount?: string;
   };
   readonly sol: { readonly user: string; readonly password: string };
   readonly certificate: {
@@ -253,6 +256,20 @@ export function create(options: CreateOptions): Client {
     );
   }
 
+  const account = options.issuer.detraccionAccount;
+  // factura-2.0.csv: the account number is an..100 and not empty (ERR 3034).
+  if (account !== undefined && (account.trim().length === 0 || account.length > 100)) {
+    issues.push(
+      issue(
+        'issuer.detraccionAccount',
+        '3034',
+        'The Banco de la Nación account must have 1 to 100 characters.',
+        'Pass the account number as SUNAT shows it, or leave detraccionAccount out.',
+        'sources/sunat/reglas-validacion-2026-08-26/factura-2.0.csv',
+      ),
+    );
+  }
+
   const solUser = options.sol?.user ?? process.env['SUNAT_SOL_USER'];
   const solPassword = options.sol?.password ?? process.env['SUNAT_SOL_PASSWORD'];
   if (solUser === undefined) {
@@ -412,7 +429,13 @@ export function create(options: CreateOptions): Client {
 
   const config: TribuConfig = Object.freeze({
     env,
-    issuer: { ruc: ready.ruc, name: options.issuer.name, ubigeo: options.issuer.ubigeo, igv },
+    issuer: {
+      ruc: ready.ruc,
+      name: options.issuer.name,
+      ubigeo: options.issuer.ubigeo,
+      igv,
+      ...(account === undefined ? {} : { detraccionAccount: account }),
+    },
     sol: { user: ready.solUser, password: '[REDACTED]' },
     certificate: {
       notBefore: ready.certificate.notBefore,
@@ -430,7 +453,13 @@ export function create(options: CreateOptions): Client {
 
   const context: ClientContext = {
     env,
-    issuer: { ruc: ready.ruc, name: options.issuer.name, ubigeo: options.issuer.ubigeo, igv },
+    issuer: {
+      ruc: ready.ruc,
+      name: options.issuer.name,
+      ubigeo: options.issuer.ubigeo,
+      igv,
+      ...(account === undefined ? {} : { detraccionAccount: account }),
+    },
     sol: { user: ready.solUser, password: ready.solPassword },
     certificate: ready.certificate,
     transport,
