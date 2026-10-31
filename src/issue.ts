@@ -764,7 +764,12 @@ export async function waitFor(
         status:
           record.id.startsWith('RA-') || member.condition === '3' ? Status.Voided : Status.Accepted,
       }));
-      return { record: { ...record, status: Status.Accepted, members: documents }, documents };
+      // The Ticket's CDR is part of what the Issuer must keep (ADR 0008).
+      const cdr = answer.cdr === undefined ? {} : { cdr: answer.cdr };
+      return {
+        record: { ...record, ...cdr, status: Status.Accepted, members: documents },
+        documents,
+      };
     }
     await sleep(interval);
   }

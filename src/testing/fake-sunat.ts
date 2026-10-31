@@ -120,9 +120,12 @@ export function fakeSunat(options: FakeSunatOptions = {}): FakeSunat {
       return { ticket: `T-${ticketsIssued}` };
     },
 
-    async getStatus(_ticket: string | { readonly ticket: string }): Promise<StatusAnswer> {
+    async getStatus(ticket: string | { readonly ticket: string }): Promise<StatusAnswer> {
       statusQueries += 1;
-      return { statusCode: tickets.shift() ?? '0' };
+      const statusCode = tickets.shift() ?? '0';
+      // Like SUNAT, a processed Ticket comes with its CDR.
+      if (statusCode !== '0') return { statusCode };
+      return { statusCode, cdr: cdr(typeof ticket === 'string' ? ticket : ticket.ticket, '0', []) };
     },
 
     async getStatusCdr(lookup: CdrLookup): Promise<Cdr | undefined> {

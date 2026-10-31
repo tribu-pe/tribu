@@ -194,6 +194,7 @@ describe('sunat.voidDocuments', () => {
     });
     const done = await sunat.waitFor(voiding?.record ?? invoice, instant);
     expect(done.documents[0]).toMatchObject({ id: 'F001-1', status: Status.Voided });
+    expect(done.record.cdr?.code).toBe('0'); // kept, as the Issuer must (ADR 0008)
   });
 
   test('groups documents by issue date: one submission per date', async () => {
