@@ -65,7 +65,7 @@ Validation workbook, sheet Factura2_0, rules 174–177. All are ERRORs since 202
 
 ## Certificates
 
-- Beta: SUNAT says no certificate registered with it is needed. Endpoint `https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService`, user `[RUC]MODDATOS`, password `MODDATOS`. Beta only covers Invoices, Receipts and notes. *Unconfirmed:* that any self-signed certificate works.
+- Beta: SUNAT says no certificate registered with it is needed. Endpoint `https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService`, user `[RUC]MODDATOS`, password `MODDATOS`. Beta only covers Invoices, Receipts and notes. A self-signed certificate generated at test time works: beta accepted every document signed with one (Milestone 0, 2026-10-30: [milestone-0-results.md](milestone-0-results.md), question 1).
 - Production: the certificate must come from a provider in INDECOPI's ROPS registry (IOFE) **and be registered with SUNAT through SOL** (otherwise ERROR 2325; 2326 if deregistered). SUNAT offers a free Certificado Digital Tributario to eligible taxpayers until 2027-12-31 (R.S. 038-2020).
 
 ## Record retention
